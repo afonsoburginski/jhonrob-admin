@@ -1,38 +1,57 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
+<h3 align= "center" fontSize="60px">
+  JHOONROB CRM
+</h3>
 
-First, run the development server:
+<p align="center">
+    <img src="public/UI.png" alt="Logo" height=530>
+</p>
+
+## :rocket: Tecnologias
+-  Next.js 14
+-  Typescript
+-  @tremor/react
+-  @headlessui
+-  Tailwind.css
+-  Context API
+-  Prisma ORM
+-  PostgreSQL
+-  Vercel Analytics
+
+## 💻 Sobre o projeto
+
+JHOONROB CRM é uma solução de gerenciamento de relacionamento com o cliente desenvolvida para ajudar as empresas a melhorar suas interações com os clientes, otimizar suas vendas e melhorar a lucratividade. Com uma interface de usuário intuitiva e recursos poderosos, o JHOONROB CRM oferece uma visão completa dos seus clientes, permitindo que você ofereça um serviço personalizado e melhore a satisfação do cliente.
+
+### Funcionalidades
+
+- [x] **Gerenciamento de Clientes**: Mantenha um registro detalhado de todos os seus clientes e interações com eles.
+- [x] **Cadastro, Edição e Remoção de Produtos**: Gerencie facilmente seus produtos diretamente do CRM.
+- [x] **Formulário de Steps**: Um formulário passo a passo para selecionar produtos, clientes, vendedores, definir prazos e gerar propostas comerciais.
+- [x] **Gráfico de Lucro Total**: Visualize o lucro total da empresa através de um gráfico intuitivo.
+- [x] **Tabela de Vendedores Destacados**: Veja quais vendedores estão se destacando, com informações sobre seus lucros e metas.
+- [x] **Uso da Context API**: Utilizamos a Context API para gerenciar o estado da aplicação e armazenar informações temporariamente.
+
+## :computer_mouse: Instalação e execução
+
+Faça um clone desse repositório e acesse o diretório.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+$ git clone git@github.com:afonsoburginski/JHONROB_CRM.git && cd JHONROB_CRM
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+# Instalando as dependências
+$ yarn install
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# Executanto aplicação
+$ yarn run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## :speech_balloon: Autor
+-  [Github](https://github.com/afonsoburginski/)
+-  [Linkedin](https://www.linkedin.com/in/afonsoburginski/)
+-  [Email](mailto:afonsoburginski@gmail.com/)
 
-## Learn More
+## 📝 Licença
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-# admin-panel-boilerplate
-# jhonrob-admin
+Esse projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE.md) para mais detalhes.
