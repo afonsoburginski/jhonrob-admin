@@ -2,6 +2,7 @@
   "name": "admin",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://192.168.1.104:8089",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -27,6 +28,7 @@
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-tooltip": "^1.0.7",
+    "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "cmdk": "^0.2.0",

@@ -1,9 +1,10 @@
+import "../globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "../globals.css";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import Sidebar from "@/components/sidebar";
 import { Toaster } from "@/components/ui/toaster"
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { DataProvider } from "@/context/DataProvider";
+import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,21 +19,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <TooltipProvider>
-      <html lang="en">
-        <body className={inter.className}>
-          <div className="flex h-full">
-            <div className="flex-grow h-full pl-14">
-              <Header />
-              <main className="h-full">
-                {children}
-              </main>
+    <DataProvider>  
+      <TooltipProvider>
+        <html lang="en">
+          <body className={inter.className}>
+            <div className="flex h-full">
+              <div className="flex-grow h-full pl-14">
+                <Header />
+                <main className="h-full">
+                  {children}
+                </main>
+              </div>
+              <Sidebar />
             </div>
-            <Sidebar />
-          </div>
-          <Toaster />
-        </body>
-      </html>
-    </TooltipProvider>
+            <Toaster />
+          </body>
+        </html>
+      </TooltipProvider>
+    </DataProvider>
   );
 }

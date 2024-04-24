@@ -11,42 +11,35 @@ import {
 } from "@/components/ui/command";
 import { Command as CommandPrimitive } from "cmdk";
 
-type SelectableItem = Record<"value" | "label", string>;
+type Option = { id: string | number, name: string };
 
-interface MultiSelectProps {
-  items: SelectableItem[];
-}
-
-export function MultiSelect({ items }: MultiSelectProps) {
+export function MultiSelect({ options, value, onValueChange, placeholder }: { options: Option[], value: Option | Option[], onValueChange: (value: Option[]) => void, placeholder: string }) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
-  const [selected, setSelected] = React.useState<SelectableItem[]>([]);
   const [inputValue, setInputValue] = React.useState("");
 
-  const handleUnselect = React.useCallback((item: SelectableItem) => {
-    setSelected(prev => prev.filter(s => s.value !== item.value));
-  }, []);
+  const handleUnselect = React.useCallback((option: Option) => {
+    const newValue = Array.isArray(value) ? value.filter(s => String(s.id) !== String(option.id)) : [];
+    onValueChange(newValue);
+  }, [value, onValueChange]);
 
   const handleKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
     const input = inputRef.current
     if (input) {
       if (e.key === "Delete" || e.key === "Backspace") {
         if (input.value === "") {
-          setSelected(prev => {
-            const newSelected = [...prev];
-            newSelected.pop();
-            return newSelected;
-          })
+          const newSelected = Array.isArray(value) ? [...value] : [];
+          newSelected.pop();
+          onValueChange(newSelected);
         }
       }
-      // This is not a default behaviour of the <input /> field
       if (e.key === "Escape") {
         input.blur();
       }
     }
-  }, []);
+  }, [onValueChange, value]);
 
-  const selectables = items.filter(item => !selected.includes(item));
+  const selectables = options.filter(option => !Array.isArray(value) ? String(option.id) !== String(value.id) : !value.map(v => String(v.id)).includes(String(option.id)));
 
   return (
     <Command onKeyDown={handleKeyDown} className="overflow-visible bg-transparent">
@@ -54,36 +47,35 @@ export function MultiSelect({ items }: MultiSelectProps) {
         className="group border border-input px-3 py-2 text-sm ring-offset-background rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
       >
         <div className="flex gap-1 flex-wrap">
-          {selected.map((item) => {
+          {Array.isArray(value) ? value.map((framework) => {
             return (
-              <Badge key={item.value} variant="secondary">
-                {item.label}
+              <Badge key={framework.id} variant="secondary">
+                {framework.name}
                 <button
                   className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      handleUnselect(item);
+                      handleUnselect(framework);
                     }
                   }}
                   onMouseDown={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                   }}
-                  onClick={() => handleUnselect(item)}
+                  onClick={() => handleUnselect(framework)}
                 >
                   <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
                 </button>
               </Badge>
             )
-          })}
-          {/* Avoid having the "Search" Icon */}
+          }) : null}
           <CommandPrimitive.Input
             ref={inputRef}
             value={inputValue}
             onValueChange={setInputValue}
             onBlur={() => setOpen(false)}
             onFocus={() => setOpen(true)}
-            placeholder="Select items..."
+            placeholder={placeholder} // Usando a propriedade placeholder aqui
             className="ml-2 bg-transparent outline-none placeholder:text-muted-foreground flex-1"
           />
         </div>
@@ -92,21 +84,22 @@ export function MultiSelect({ items }: MultiSelectProps) {
         {open && selectables.length > 0 ?
           <div className="absolute w-full z-10 top-0 rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
             <CommandGroup className="h-full overflow-auto">
-              {selectables.map((item) => {
+              {selectables.map((framework) => {
                 return (
                   <CommandItem
-                    key={item.value}
+                    key={framework.id}
                     onMouseDown={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                     }}
-                    onSelect={(value) => {
-                      setInputValue("")
-                      setSelected(prev => [...prev, item])
+                    onSelect={() => {
+                      setInputValue("");
+                      const newOptions = Array.isArray(value) ? [...value, framework] : [framework];
+                      onValueChange(newOptions);
                     }}
                     className={"cursor-pointer"}
                   >
-                    {item.label}
+                    {framework.name}
                   </CommandItem>
                 );
               })}

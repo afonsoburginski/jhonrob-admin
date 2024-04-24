@@ -1,11 +1,13 @@
 'use client'
-import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useEffect, useState, useContext } from 'react';
 import { FileText, CheckCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { DataContext } from '@/context/DataProvider';
 
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { MultiSelect } from '@/components/ui/multiselect';
+import { MultiSelect } from '@/components/multiSelect';
 import {
   Select,
   SelectContent,
@@ -33,94 +35,85 @@ import {
 const data = {
   "of": [
     {
-      "id": "100",
+      "id": 100,
       "amount": 10,
       "client": "Cliente 1",
       "emission": "2022-01-01",
       "delivery": "2022-01-10",
       "tag": "SP-1",
-      "products": ["16000411"]
-    },
-    {
-      "id": "101",
-      "amount": 20,
-      "client": "Cliente 2",
-      "emission": "2022-02-02",
-      "delivery": "2022-02-12",
-      "tag": "SP-2",
-      "products": ["16000412"]
+      "products": [16000411, 16000412],
     },
   ],
   "product": [
     {
-      "id": "16000411",
+      "id": 16000411,
       "name": "FIXDR LONG TC",
-      "pieces": ["100", "102", "103", "104"]
+      "pieces": [102, 103, 104]
     },
     {
-      "id": "16000412",
+      "id": 16000412,
       "name": "FIXDR SHORT TC",
-      "pieces": ["101"]
-    }
+      "pieces": [100, 101]
+    },
   ],
   "piece": [
     {
-      "id": "100",
+      "id": 100,
       "name": "CONE EXT TAMPA SL 00 CONJ SOLDA",
       "quantity": 10,
       "balance": 10,
       "rdProduct": "1",
-      "unit": "Pç",
-      "color": "red",
-      "material": "iron",
+      "unit": "PÇ",
+      "color": "",
+      "material": "CH 12 GALV",
       "dimensions": "10x20x30",
       "weight": "2"
     },
     {
-      "id": "101",
+      "id": 101,
       "name": "CONE EXT TAMPA SL 01 CONJ SOLDA",
       "quantity": 20,
       "balance": 20,
       "rdProduct": "2",
-      "unit": "Pç",
-      "color": "blue",
-      "material": "steel",
+      "unit": "PÇ",
+      "color": "",
+      "material": "CH 12 GALV",
       "dimensions": "15x25x35",
       "weight": "3"
     },
     {
-      "id": "102",
+      "id": 102,
       "name": "CONE EXT TAMPA SL 02 CONJ SOLDA",
       "quantity": 15,
       "balance": 15,
       "rdProduct": "1",
-      "unit": "Pç",
-      "color": "green",
-      "material": "aluminum",
+      "unit": "PÇ",
+      "color": "",
+      "material": "CH 12 GALV",
       "dimensions": "12x22x32",
       "weight": "2.5"
     },
     {
-      "id": "103",
+      "id": 103,
       "name": "CONE EXT TAMPA SL 03 CONJ SOLDA",
       "quantity": 25,
       "balance": 25,
       "rdProduct": "1",
-      "unit": "Pç",
-      "color": "yellow",
-      "material": "copper",
+      "unit": "PÇ",
+      "color": "",
+      "material": "CH 12 GALV",
       "dimensions": "14x24x34",
       "weight": "3.5"
     },
     {
-      "id": "104",
+      "id": 104,
       "name": "CONE EXT TAMPA SL 04 CONJ SOLDA",
       "quantity": 30,
       "balance": 30,
       "rdProduct": "1",
-      "unit": "Pç",
-      "color": "purple",
-      "material": "brass",
+      "unit": "PÇ",
+      "color": "",
+      "material": "CH 12 GALV",
       "dimensions": "16x26x36",
       "weight": "4.5"
     },
@@ -128,12 +121,13 @@ const data = {
 };
 
 export default function Settings() {
-  const [selectedOf, setSelectedOf] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState('');
+  const [selectedOf, setSelectedOf] = useState('0');
+  const [selectedProduct, setSelectedProduct] = useState<number[]>([]);
+  const { setSelectedData } = useContext(DataContext);
 
-  const selectedOfData = data.of.find(ofItem => ofItem.id === selectedOf);
-  const selectedProductData = data.product.find(productItem => productItem.id === selectedProduct);
-  const piecesData = selectedProductData ? selectedProductData.pieces.map(pieceId => data.piece.find(pieceItem => pieceItem.id === pieceId)) : [];
+  const selectedOfData = data.of.find(ofItem => ofItem.id == Number(selectedOf));
+  const selectedProductData = data.product.filter(productItem => selectedProduct.map(Number).includes(productItem.id));
+  const piecesData = selectedProductData ? selectedProductData.flatMap(productItem => productItem.pieces.map(pieceId => data.piece.find(pieceItem => pieceItem.id == pieceId))) : [];
   const relevantProducts = selectedOfData ? data.product.filter(productItem => selectedOfData.products.includes(productItem.id)) : [];
 
   useEffect(() => {
@@ -144,21 +138,46 @@ export default function Settings() {
     console.log('Produto selecionado:', selectedProductData);
   }, [selectedProduct]);
 
+
+  useEffect(() => {
+    if (selectedOf && selectedProduct) {
+      setSelectedData({ selectedOfData, selectedProductData, piecesData, data });
+    }
+  }, [selectedOf, selectedProduct]);
+
+  useEffect(() => {
+    axios.get('/api/proxy')
+      .then(response => {
+        console.log('Dados da API ordens-de-producao/ofs:', response.data);
+      })
+      .catch(error => {
+        console.error('Erro ao buscar dados da API ordens-de-producao/ofs:', error);
+      });
+
+    axios.get('/api/proxyProdutos')
+      .then(response => {
+        console.log('Dados da API produtos:', response.data);
+      })
+      .catch(error => {
+        console.error('Erro ao buscar dados da API produtos:', error);
+      });
+  }, []);
+
   return (
     <div
       className="relative hidden flex-col items-start gap-8 md:flex"
     >
       <form className="grid w-full items-start gap-6">
         <fieldset className="grid gap-6 rounded-lg border p-4">
-          <legend className="-ml-1 px-1 text-sm font-medium">Settings</legend>
+          <legend className="-ml-1 px-1 text-sm font-medium">Configuração</legend>
           <div className="grid gap-3">
             <Select value={selectedOf} onValueChange={setSelectedOf}>
               <SelectTrigger id="of" className="items-start [&_[data-description]]:hidden">
-                <SelectValue placeholder="Select the OF" />
+                <SelectValue placeholder="Selecione a OF" />
               </SelectTrigger>
               <SelectContent>
                 {data.of.map((ofItem, index) => (
-                  <SelectItem key={index} value={ofItem.id}>
+                  <SelectItem key={index} value={ofItem.id.toString()}>
                     <div className="flex items-start gap-3 text-muted-foreground">
                       <FileText className="size-5" />
                       <div className="grid gap-0.5">
@@ -174,32 +193,17 @@ export default function Settings() {
             </Select>
           </div>
           <div className="grid gap-3">
-            <Label htmlFor="product">Product</Label>
-            <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-              <SelectTrigger id="product" className="items-start [&_[data-description]]:hidden">
-                <SelectValue placeholder="Select the Product" />
-              </SelectTrigger>
-              <SelectContent>
-                {relevantProducts.map((productItem, index) => (
-                  <SelectItem key={index} value={productItem.id}>
-                    <div className="flex items-start gap-3 text-muted-foreground">
-                      <FileText className="size-5" />
-                      <div className="grid gap-0.5">
-                        <p>
-                          <span className="font-medium text-foreground">{productItem.id}</span>{" "}
-                          {productItem.name}
-                          <span className="text-muted-foreground"></span>
-                        </p>
-                      </div>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="product">Produtos</Label>
+            <MultiSelect 
+              options={relevantProducts.map(item => ({ id: item.id.toString(), name: item.name }))}
+              value={selectedProduct ? relevantProducts.filter(item => selectedProduct.map(String).includes(item.id.toString())) : []}
+              onValueChange={selectedOptions => setSelectedProduct(selectedOptions.map(option => Number(option.id)))}
+              placeholder="Selecione os produtos..." // Personalizando o placeholder aqui
+            />
           </div>
         </fieldset>
         <fieldset className="grid gap-6 rounded-lg border p-4">
-          <legend className="-ml-1 px-1 text-sm font-medium">Body OF</legend>
+          <legend className="-ml-1 px-1 text-sm font-medium">Dados da OF</legend>
           <div className="grid gap-3">
             <Card>
               <CardHeader>
@@ -217,40 +221,50 @@ export default function Settings() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="overflow-auto max-h-[26vh] min-h-[26vh]">
+              <CardContent className="overflow-auto max-h-[30vh] min-h-[30vh]">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[100px]">Código</TableHead>
-                      <TableHead>Piece</TableHead>
-                      <TableHead className="w-[100px]">Weight</TableHead>
-                      <TableHead className="w-[100px]">Quantity</TableHead>
+                      <TableHead>Peça</TableHead>
+                      <TableHead className="w-[100px]">Peso</TableHead>
+                      <TableHead className="w-[100px]">Qtd</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {piecesData.map((piece, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-semibold py-2">{piece?.id}</TableCell>
-                        <TableCell className="py-2">
-                          <Label htmlFor={`stock-${index}`} className="sr-only">
-                            Stock
-                          </Label>
-                          <Input id={`stock-${index}`} type="button" defaultValue={piece?.name} />
-                        </TableCell>
-                        <TableCell className="py-2">
-                          <Label htmlFor={`price-${index}`} className="sr-only">
-                            Price
-                          </Label>
-                          <Input id={`price-${index}`} type="text" defaultValue={piece?.weight}/>
-                        </TableCell>
-                        <TableCell className="py-2">
-                          <Label htmlFor={`quantity-${index}`} className="sr-only">
-                            Quantity
-                          </Label>
-                          <Input id={`quantity-${index}`} type="number" defaultValue={piece?.quantity} />
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {selectedProductData.map((product) => {
+                      const productPieces = product.pieces.map(pieceId => data.piece.find(pieceItem => pieceItem.id === pieceId));
+                      return (
+                        <>
+                          <TableRow className="bg-gray-200">
+                            <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-6">({product.id}) {product.name}</TableHead>
+                          </TableRow>
+                          {productPieces.map((piece, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="font-semibold py-1">{piece?.id}</TableCell>
+                              <TableCell className="py-1">
+                                <Label htmlFor={`name-${index}`} className="sr-only">
+                                  Código
+                                </Label>
+                                <Input className="h-8 text-xs" id={`name-${index}`} type="button" defaultValue={piece?.name} />
+                              </TableCell>
+                              <TableCell className="py-1">
+                                <Label htmlFor={`weight-${index}`} className="sr-only">
+                                  Peso
+                                </Label>
+                                <Input className="h-8 text-xs" id={`weight-${index}`} type="text" defaultValue={piece?.weight}/>
+                              </TableCell>
+                              <TableCell className="py-1">
+                                <Label htmlFor={`quantity-${index}`} className="sr-only">
+                                  Qtd
+                                </Label>
+                                <Input className="h-8 text-xs" id={`quantity-${index}`} type="number" defaultValue={piece?.quantity} />
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </CardContent>

@@ -1,4 +1,6 @@
 'use client'
+import { useContext } from 'react';
+import { DataContext } from '@/context/DataProvider';
 import Image from 'next/image';
 import Settings from './settings';
 import {
@@ -24,68 +26,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-const data = {
-  "of": [
-    {
-      "id": 100,
-      "amount": 10,
-      "client": "Cliente 1",
-      "emission": "2022-01-01",
-      "delivery": "2022-01-10",
-      "tag": "SP-1",
-      "products": [16000411]
-    },
-    {
-      "id": 101,
-      "amount": 20,
-      "client": "Cliente 2",
-      "emission": "2022-02-02",
-      "delivery": "2022-02-12",
-      "tag": "SP-2",
-      "products": [16000412]
-    },
-  ],
-  "product": [
-    {
-      "id": 16000411,
-      "name": "FIXDR LONG TC",
-      "pieces": [100]
-    },
-    {
-      "id": "16000412",
-      "name": "FIXDR SHORT TC",
-      "pieces": [101]
-    }
-  ],
-  "piece": [
-    {
-      "id": 100,
-      "name": "CONE EXT TAMPA SL 00 CONJ SOLDA",
-      "quantity": 10,
-      "balance": 10,
-      "rdProduct": "1",
-      "unit": "Pç",
-      "color": "red",
-      "material": "iron",
-      "dimensions": "10x20x30",
-      "weight": "2"
-    },
-    {
-      "id": 101,
-      "name": "CONE EXT TAMPA SL 01 CONJ SOLDA",
-      "quantity": 20,
-      "balance": 20,
-      "rdProduct": "2",
-      "unit": "Pç",
-      "color": "blue",
-      "material": "steel",
-      "dimensions": "15x25x35",
-      "weight": "3"
-    },
-  ]
-};
-
 export default function Expedition() {
+  const { piecesData, data } = useContext(DataContext);
+
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
       <div className="flex flex-col sm:gap-4 sm:py-4">
@@ -150,19 +93,19 @@ export default function Expedition() {
                 </CardContent>
                 <CardContent className="border-2 rounded-lg border-gray-400 p-1 px-4 grid grid-cols-4 gap-2 items-start">
                   <div>
-                    <CardDescription className="text-xs"><b>O.F:</b> {data?.of[0]?.id ?? '-'}</CardDescription>
-                    <CardDescription className="text-xs"><b>Cliente:</b> {data?.of[0]?.client ?? '-'}</CardDescription>
-                    <CardDescription className="text-xs"><b>Produto:</b> {data?.product[0]?.id ?? '-'}</CardDescription>
+                    <CardDescription className="text-xs"><b>O.F:</b> {data?.selectedOfData?.id ?? '-'}</CardDescription>
+                    <CardDescription className="text-xs"><b>Cliente:</b> {data?.selectedOfData?.client ?? '-'}</CardDescription>
+                    <CardDescription className="text-xs"><b>Produto:</b> {data?.selectedProductData?.id ?? '-'}</CardDescription>
                   </div>
                   <div>
-                    <CardDescription className="text-xs"><b>Quantidade:</b> {data?.of[0]?.amount ?? '-'}</CardDescription>
+                    <CardDescription className="text-xs"><b>Quantidade:</b> {data?.selectedOfData?.amount ?? '-'}</CardDescription>
                   </div>
                   <div>
-                    <CardDescription className="text-xs"><b>Dt.Emissão:</b> {data?.of[0]?.emission ?? '-'}</CardDescription>
-                    <CardDescription className="text-xs"><b>Dt.Entrega:</b> {data?.of[0]?.delivery ?? '-'}</CardDescription>
+                    <CardDescription className="text-xs"><b>Dt.Emissão:</b> {data?.selectedOfData?.emission ?? '-'}</CardDescription>
+                    <CardDescription className="text-xs"><b>Dt.Entrega:</b> {data?.selectedOfData?.delivery ?? '-'}</CardDescription>
                   </div>
                   <div className="flex items-center justify-center">
-                    <CardDescription className="font-bold">Tag: {data?.of[0]?.tag ?? '-'}</CardDescription>
+                    <CardDescription className="font-bold">Tag: {data?.selectedOfData?.tag ?? '-'}</CardDescription>
                   </div>
                 </CardContent>
                 <CardDescription className="text-xs font-bold mt-5">{'Status = { P = Pendente, E = Embarcado, C = Cancelado, N = Não Retirado, R = Retirado }'}</CardDescription>
@@ -180,31 +123,38 @@ export default function Expedition() {
                       <TableHead className="text-xs text-center font-bold h-6 px-1">(AxLxC)</TableHead>
                       <TableHead className="text-xs text-right font-bold h-6 pr-0">Peso tot</TableHead>
                     </TableRow>
+                  </TableHeader>
+                  <TableBody className="border-b">
                     <TableRow className="bg-gray-200">
                       <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-6">Local: Expedição</TableHead>
                     </TableRow>
                     <TableRow className="h-2"></TableRow>
-                    <TableRow className="bg-gray-200">
-                      <TableHead colSpan={10} className="w-full text-start text-xs font-bold h-6">
-                        ({data?.product[0]?.id ?? '-'}) {data?.product[0]?.name ?? '-'}
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody className="border-b">
-                    {data?.piece?.map((pieceItem, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="text-xs text-right py-1 px-1 border-r">{pieceItem.quantity}</TableCell>
-                        <TableCell className="text-xs text-right py-1 px-1 border-r">{pieceItem.balance}</TableCell>
-                        <TableCell className="text-xs text-right py-1 px-1 border-r">{pieceItem.id}</TableCell>
-                        <TableCell className="text-xs text-center py-1 px-1 border-r">{pieceItem.rdProduct}</TableCell>
-                        <TableCell className="text-xs text-start py-1 px-1 border-r">{pieceItem.name}</TableCell>
-                        <TableCell className="text-xs text-center py-1 px-1 border-r">{pieceItem.unit}</TableCell>
-                        <TableCell className="text-xs text-start py-1 px-1 border-r">{pieceItem.color}</TableCell>
-                        <TableCell className="text-xs text-center py-1 px-1 border-r">{pieceItem.material}</TableCell>
-                        <TableCell className="text-xs text-center py-1 px-1 border-r">{pieceItem.dimensions}</TableCell>
-                        <TableCell className="text-xs text-right py-1 px-1">{pieceItem.weight}</TableCell>
-                      </TableRow>
-                    ))}
+                    {data?.selectedProductData?.map((product) => {
+                      const productPieces = piecesData.filter(piece => product.pieces.includes(piece.id));
+                      return (
+                        <>
+                          <TableRow className="bg-gray-200">
+                            <TableHead colSpan={10} className="w-full text-start text-xs font-bold h-6">
+                              ({product.id}) {product.name}
+                            </TableHead>
+                          </TableRow>
+                          {productPieces.map((piece, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="text-xs text-right py-1 px-1 border-r">{piece.quantity}</TableCell>
+                              <TableCell className="text-xs text-right py-1 px-1 border-r">{piece.balance}</TableCell>
+                              <TableCell className="text-xs text-right py-1 px-1 border-r">{piece.id}</TableCell>
+                              <TableCell className="text-xs text-center py-1 px-1 border-r">{piece.rdProduct}</TableCell>
+                              <TableCell className="text-xs text-start py-1 px-1 border-r">{piece.name}</TableCell>
+                              <TableCell className="text-xs text-center py-1 px-1 border-r">{piece.unit}</TableCell>
+                              <TableCell className="text-xs text-start py-1 px-1 border-r">{piece.color}</TableCell>
+                              <TableCell className="text-xs text-center py-1 px-1 border-r">{piece.material}</TableCell>
+                              <TableCell className="text-xs text-center py-1 px-1 border-r">{piece.dimensions}</TableCell>
+                              <TableCell className="text-xs text-right py-1 px-1">{piece.weight}</TableCell>
+                            </TableRow>
+                          ))}
+                        </>
+                      );
+                    })}
                   </TableBody>
                 </Table>
                 <CardFooter className="flex justify-between items-center p-0 mt-2">
@@ -235,13 +185,12 @@ export default function Expedition() {
             <TabsContent value="expedition">
               <Card x-chunk="dashboard-06-chunk-1">
                 <CardHeader>
-                  <CardTitle>Itens</CardTitle>
+                  <CardTitle>Expedição</CardTitle>
                   <CardDescription>
-                    Selecione os itens para a expedição.
+                    Lista de itens enviados para expedição
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
-                  {/* Aqui você pode adicionar a lógica para listar os itens */}
                 </CardContent>
                 <CardFooter>
                   <div className="text-xs text-muted-foreground">
