@@ -132,7 +132,7 @@ export default function Settings() {
       console.log('Peças selecionadas:', selectedPieces);
       console.log('Produtos selecionados:', selectedProductData);
     }
-  }, [selectedOf, selectedPieces]);
+  }, [selectedOf, selectedPieces, relevantProducts, selectedOfData, setSelectedData]);
 
   return (
     <div
