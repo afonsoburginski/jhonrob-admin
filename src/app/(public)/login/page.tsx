@@ -21,7 +21,7 @@ export default function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     // Aqui você pode adicionar sua própria lógica de autenticação
     toast({
@@ -33,11 +33,9 @@ export default function LoginForm() {
         </div>
       )
     });
-    if (router) {
-      setTimeout(() => {
-        router.push("/");
-      }, 2000);
-    }
+    setTimeout(() => {
+      router.push("/");
+    }, 2000);
   };
 
   return (
