@@ -25,6 +25,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+interface Product {
+  id: number;
+  name: string;
+  pieces: number[];
+}
+
+interface Piece {
+  id: number;
+  name: string;
+  quantity: number;
+  balance: number;
+  rdProduct: string;
+  unit: string;
+  color: string;
+  material: string;
+  dimensions: string;
+  weight: string;
+}
 
 export default function Expedition() {
   const { piecesData, data } = useContext(DataContext);
@@ -112,8 +130,8 @@ export default function Expedition() {
                       <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-6">Local: Expedição</TableHead>
                     </TableRow>
                     <TableRow className="h-2"></TableRow>
-                    {data?.selectedProductData?.map((product) => {
-                      const productPieces = piecesData.filter(piece => product.pieces.includes(piece.id));
+                    {data?.selectedProductData?.map((product: Product) => {
+                      const productPieces = piecesData.filter((piece: Piece) => product.pieces.includes(piece.id));
                       return (
                         <>
                           <TableRow className="bg-gray-200">
@@ -121,7 +139,7 @@ export default function Expedition() {
                               ({product.id}) {product.name}
                             </TableHead>
                           </TableRow>
-                          {productPieces.map((piece, index) => (
+                          {productPieces.map((piece: Piece, index: number) => (
                             <TableRow key={index}>
                               <TableCell className="text-xs text-right py-1 px-1 border-r">{piece.quantity}</TableCell>
                               <TableCell className="text-xs text-right py-1 px-1 border-r">{piece.balance}</TableCell>

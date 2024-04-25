@@ -55,7 +55,7 @@ export function MultiSelect({ options, value, onValueChange, placeholder }: { op
           {Array.isArray(value) ? value.map((framework) => {
             return (
               <Badge key={framework.id} variant="secondary">
-                {framework.name}
+                {framework.name.substring(0, 22)}
                 <button
                   className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   onKeyDown={(e) => {
