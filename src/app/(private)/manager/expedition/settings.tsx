@@ -119,8 +119,8 @@ export default function Settings() {
 
   const piecesOptions = relevantProducts.flatMap(product => {
     const pieces = product.pieces.map(pieceId => data.piece.find(pieceItem => pieceItem.id == pieceId)).filter(Boolean);
-    return pieces.map(piece => piece && { id: piece.id, name: piece.name, group: product.name }).filter(Boolean);
-  }).filter(Boolean);
+    return pieces.map(piece => piece && { id: piece.id, name: piece.name, group: product.name });
+  }).filter((piece): piece is { id: number; name: string; group: string } => piece !== undefined);
 
   useEffect(() => {
     if (selectedOf && selectedPieces.length > 0) {
