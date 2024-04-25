@@ -1,6 +1,6 @@
+// src/app/(public)/login/page.tsx
 'use client'
 import { useState } from "react";
-import { useRouter } from 'next/router';
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,6 @@ import { useToast } from "@/components/ui/use-toast";
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter();
   const { toast } = useToast();
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -33,9 +32,6 @@ export default function LoginForm() {
         </div>
       )
     });
-    setTimeout(() => {
-      router.push("/");
-    }, 2000);
   };
 
   return (
