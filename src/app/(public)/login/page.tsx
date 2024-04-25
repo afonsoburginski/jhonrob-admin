@@ -1,5 +1,5 @@
 'use client'
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from 'next/router';
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,9 +41,11 @@ export default function LoginForm() {
             </div>
           )
         });
-        setTimeout(() => {
-          router.push("/");
-        }, 2000);
+        if (router) {
+          setTimeout(() => {
+            router.push("/");
+          }, 2000);
+        }
       } else {
         await signOut(auth);
         toast({
