@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/command";
 import { Command as CommandPrimitive } from "cmdk";
 
-type Option = { id: string | number, name: string };
+type Option = { id: string | number, name: string, group: string | number };
 
 export function MultiSelect({ options, value, onValueChange, placeholder }: { options: Option[], value: Option | Option[], onValueChange: (value: Option[]) => void, placeholder: string }) {
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -40,6 +40,11 @@ export function MultiSelect({ options, value, onValueChange, placeholder }: { op
   }, [onValueChange, value]);
 
   const selectables = options.filter(option => !Array.isArray(value) ? String(option.id) !== String(value.id) : !value.map(v => String(v.id)).includes(String(option.id)));
+
+  const groupedSelectables = selectables.reduce((groups: Record<string, Option[]>, option) => {
+    (groups[String(option.group)] = groups[String(option.group)] || []).push(option);
+    return groups;
+  }, {});
 
   return (
     <Command onKeyDown={handleKeyDown} className="overflow-visible bg-transparent">
@@ -81,29 +86,30 @@ export function MultiSelect({ options, value, onValueChange, placeholder }: { op
         </div>
       </div>
       <div className="relative mt-2">
-        {open && selectables.length > 0 ?
+        {open && Object.keys(groupedSelectables).length > 0 ?
           <div className="absolute w-full z-10 top-0 rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
-            <CommandGroup className="h-full overflow-auto">
-              {selectables.map((framework) => {
-                return (
+            {Object.entries(groupedSelectables).map(([group, options]) => (
+              <CommandGroup className="h-full overflow-auto" key={group}>
+                <div className="font-semibold">{group}</div>
+                {options.map((option: Option) => (
                   <CommandItem
-                    key={framework.id}
+                    key={option.id}
                     onMouseDown={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                     }}
                     onSelect={() => {
                       setInputValue("");
-                      const newOptions = Array.isArray(value) ? [...value, framework] : [framework];
+                      const newOptions = Array.isArray(value) ? [...value, option] : [option];
                       onValueChange(newOptions);
                     }}
                     className={"cursor-pointer"}
                   >
-                    {framework.name}
+                    {option.name}
                   </CommandItem>
-                );
-              })}
-            </CommandGroup>
+                ))}
+              </CommandGroup>
+            ))}
           </div>
           : null}
       </div>

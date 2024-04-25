@@ -48,7 +48,7 @@ const data = {
     {
       "id": 16000411,
       "name": "FIXDR LONG TC",
-      "pieces": [102, 103, 104]
+      "pieces": [102, 103]
     },
     {
       "id": 16000412,
@@ -63,7 +63,7 @@ const data = {
       "quantity": 10,
       "balance": 10,
       "rdProduct": "1",
-      "unit": "PÇ",
+      "unit": "PÇ", 
       "color": "",
       "material": "CH 12 GALV",
       "dimensions": "10x20x30",
@@ -105,63 +105,34 @@ const data = {
       "dimensions": "14x24x34",
       "weight": "3.5"
     },
-    {
-      "id": 104,
-      "name": "CONE EXT TAMPA SL 04 CONJ SOLDA",
-      "quantity": 30,
-      "balance": 30,
-      "rdProduct": "1",
-      "unit": "PÇ",
-      "color": "",
-      "material": "CH 12 GALV",
-      "dimensions": "16x26x36",
-      "weight": "4.5"
-    },
   ]
 };
 
 export default function Settings() {
   const [selectedOf, setSelectedOf] = useState('0');
   const [selectedProduct, setSelectedProduct] = useState<number[]>([]);
+  const [selectedPieces, setSelectedPieces] = useState<number[]>([]);
   const { setSelectedData } = useContext(DataContext);
 
   const selectedOfData = data.of.find(ofItem => ofItem.id == Number(selectedOf));
-  const selectedProductData = data.product.filter(productItem => selectedProduct.map(Number).includes(productItem.id));
-  const piecesData = selectedProductData ? selectedProductData.flatMap(productItem => productItem.pieces.map(pieceId => data.piece.find(pieceItem => pieceItem.id == pieceId))) : [];
   const relevantProducts = selectedOfData ? data.product.filter(productItem => selectedOfData.products.includes(productItem.id)) : [];
 
-  useEffect(() => {
-    console.log('OF selecionado:', selectedOfData);
-  }, [selectedOf]);
-  
-  useEffect(() => {
-    console.log('Produto selecionado:', selectedProductData);
-  }, [selectedProduct]);
-
+  const piecesOptions = relevantProducts.flatMap(product => {
+    const pieces = product.pieces.map(pieceId => data.piece.find(pieceItem => pieceItem.id == pieceId)).filter(Boolean);
+    return pieces.map(piece => piece && { id: piece.id, name: piece.name, group: product.name }).filter(Boolean);
+  }).filter(Boolean);
 
   useEffect(() => {
-    if (selectedOf && selectedProduct) {
+    if (selectedOf && selectedPieces.length > 0) {
+      const selectedProductData = relevantProducts.filter(product => product.pieces.some(piece => selectedPieces.includes(piece)));
+      setSelectedProduct(selectedProductData.map(product => product.id));
+      const piecesData = selectedProductData.flatMap(productItem => productItem.pieces.map(pieceId => data.piece.find(pieceItem => pieceItem.id == Number(pieceId)))).filter(piece => piece && selectedPieces.includes(piece.id));
       setSelectedData({ selectedOfData, selectedProductData, piecesData, data });
+      console.log('OF selecionada:', selectedOf);
+      console.log('Peças selecionadas:', selectedPieces);
+      console.log('Produtos selecionados:', selectedProductData);
     }
-  }, [selectedOf, selectedProduct]);
-
-  useEffect(() => {
-    axios.get('/api/proxy')
-      .then(response => {
-        console.log('Dados da API ordens-de-producao/ofs:', response.data);
-      })
-      .catch(error => {
-        console.error('Erro ao buscar dados da API ordens-de-producao/ofs:', error);
-      });
-
-    axios.get('/api/proxyProdutos')
-      .then(response => {
-        console.log('Dados da API produtos:', response.data);
-      })
-      .catch(error => {
-        console.error('Erro ao buscar dados da API produtos:', error);
-      });
-  }, []);
+  }, [selectedOf, selectedPieces]);
 
   return (
     <div
@@ -195,10 +166,10 @@ export default function Settings() {
           <div className="grid gap-3">
             <Label htmlFor="product">Produtos</Label>
             <MultiSelect 
-              options={relevantProducts.map(item => ({ id: item.id.toString(), name: item.name }))}
-              value={selectedProduct ? relevantProducts.filter(item => selectedProduct.map(String).includes(item.id.toString())) : []}
-              onValueChange={selectedOptions => setSelectedProduct(selectedOptions.map(option => Number(option.id)))}
-              placeholder="Selecione os produtos..." // Personalizando o placeholder aqui
+              options={piecesOptions}
+              value={selectedPieces ? piecesOptions.filter(item => selectedPieces.map(String).includes(item.id.toString())) : []}
+              onValueChange={selectedOptions => setSelectedPieces(selectedOptions.map(option => Number(option.id)))}
+              placeholder="Selecione as peças..."
             />
           </div>
         </fieldset>
@@ -222,7 +193,7 @@ export default function Settings() {
                 </div>
               </CardHeader>
               <CardContent className="overflow-auto max-h-[30vh] min-h-[30vh]">
-                <Table>
+                {/* <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[100px]">Código</TableHead>
@@ -266,7 +237,7 @@ export default function Settings() {
                       );
                     })}
                   </TableBody>
-                </Table>
+                </Table> */}
               </CardContent>
               <CardFooter className="justify-center border-t p-2">
                 <Button size="sm" variant="ghost" className="gap-1">

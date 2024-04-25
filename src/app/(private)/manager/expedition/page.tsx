@@ -74,23 +74,6 @@ export default function Expedition() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="mt-1 mb-1 p-0">
-                  <div className="flex flex-col items-start mb-5">
-                    <div className="flex flex-row flex-wrap gap-2">
-                      <CardDescription className="text-xs"><b>Status:</b> Pendentes</CardDescription>
-                      <CardDescription className="text-xs"><b>Período:</b> Todos</CardDescription>
-                      <CardDescription className="text-xs"><b>Tipo Período:</b> Dt.Cadastro</CardDescription>
-                      <CardDescription className="text-xs"><b>Ordenação:</b> Código</CardDescription>
-                      <CardDescription className="text-xs"><b>Local:</b> Expedição</CardDescription>
-                      <CardDescription className="text-xs"><b>Tipo:</b> Não Retirado</CardDescription>
-                    </div>
-                    <div className="flex flex-row flex-wrap gap-2">
-                      <CardDescription className="text-xs"><b>Ordem de Fabricação:</b> Multipla Seleção, 5 Itens Selecionados</CardDescription>
-                      <CardDescription className="text-xs"><b>Formato:</b> Retrato</CardDescription>
-                      <CardDescription className="text-xs"><b>Listar Apenas Sem Estoque:</b> Não</CardDescription>
-                    </div>
-                  </div>
-                </CardContent>
                 <CardContent className="border-2 rounded-lg border-gray-400 p-1 px-4 grid grid-cols-4 gap-2 items-start">
                   <div>
                     <CardDescription className="text-xs"><b>O.F:</b> {data?.selectedOfData?.id ?? '-'}</CardDescription>
