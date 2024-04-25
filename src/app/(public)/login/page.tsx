@@ -1,6 +1,6 @@
 'use client'
 import { useState } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +24,7 @@ export default function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const auth = getAuth();
     try {
