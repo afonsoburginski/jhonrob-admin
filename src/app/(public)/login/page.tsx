@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from 'next/router';
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function LoginForm() {
@@ -26,40 +23,20 @@ export default function LoginForm() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const auth = getAuth();
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists() && userDoc.data().role === "admin") {
-        toast({
-          title: "Sucesso!",
-          description: (
-            <div className=" flex justify-between item-center">
-              Login realizado com sucesso.
-              <CheckCircle className="ml-2 text-blue-500" size="24" />
-            </div>
-          )
-        });
-        if (router) {
-          setTimeout(() => {
-            router.push("/");
-          }, 2000);
-        }
-      } else {
-        await signOut(auth);
-        toast({
-          variant: "destructive",
-          title: "Erro!",
-          description: "Apenas administradores podem fazer login",
-        });
-      }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro!",
-        description: error.message,
-      });
+    // Aqui você pode adicionar sua própria lógica de autenticação
+    toast({
+      title: "Sucesso!",
+      description: (
+        <div className=" flex justify-between item-center">
+          Login realizado com sucesso.
+          <CheckCircle className="ml-2 text-blue-500" size="24" />
+        </div>
+      )
+    });
+    if (router) {
+      setTimeout(() => {
+        router.push("/");
+      }, 2000);
     }
   };
 
