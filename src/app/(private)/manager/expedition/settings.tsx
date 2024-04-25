@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 import axios from 'axios';
 import { useEffect, useState, useContext } from 'react';
@@ -133,7 +132,7 @@ export default function Settings() {
       console.log('Peças selecionadas:', selectedPieces);
       console.log('Produtos selecionados:', selectedProductData);
     }
-  }, [selectedOf, selectedPieces, relevantProducts, selectedOfData, setSelectedData]);
+  }, [selectedOf, selectedPieces]);
 
   return (
     <div
