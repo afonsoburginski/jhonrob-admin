@@ -1,8 +1,11 @@
 // src/app/(public)/login/page.tsx
 'use client'
+import axios from 'axios';
 import { useState } from "react";
+import { useRouter } from 'next/navigation';
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Cookies from 'js-cookie';
 import {
   Card,
   CardContent,
@@ -16,22 +19,52 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [login, setLogin] = useState("");
+  const [senha, setSenha] = useState("");
+  const router = useRouter();
   const { toast } = useToast();
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    // Aqui você pode adicionar sua própria lógica de autenticação
-    toast({
-      title: "Sucesso!",
-      description: (
-        <div className=" flex justify-between item-center">
-          Login realizado com sucesso.
-          <CheckCircle className="ml-2 text-blue-500" size="24" />
-        </div>
-      )
-    });
+  
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/usuarios/login`, {
+        login,
+        senha,
+      });
+  
+      Cookies.set('token', response.data.token, { expires: 30 });
+  
+      console.log('Login realizado com sucesso. Dados da resposta:', response.data);
+  
+      // Obter dados do usuário
+      const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/usuarios`, {
+        headers: {
+          'Authorization': `Bearer ${response.data.token}`
+        }
+      });
+  
+      console.log('Dados do usuário:', userResponse.data);
+  
+      toast({
+        title: "Sucesso!",
+        description: (
+          <div className=" flex justify-between item-center">
+            Login realizado com sucesso.
+            <CheckCircle className="ml-2 text-blue-500" size="24" />
+          </div>
+        )
+      });
+      setTimeout(() => {
+        router.push("/");
+      }, 200);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro!",
+        description: "Falha no login. Por favor, tente novamente.",
+      });
+    }
   };
 
   return (
@@ -43,35 +76,36 @@ export default function LoginForm() {
               <CardHeader>
                 <CardTitle className="text-2xl">Login</CardTitle>
                 <CardDescription>
-                  Enter your email below to login to your account.
+                  Insira seu usuario e senha abaixo para entrar em sua conta.
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="login">Usuario</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
+                    id="login"
+                    type="text"
+                    placeholder="Insira seu usuário"
                     required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={login}
+                    onChange={(e) => setLogin(e.target.value)}
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="senha">Senha</Label>
                   <Input
-                    id="password"
+                    id="senha"
                     type="password"
+                    placeholder="Insira sua senha"
                     required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={senha}
+                    onChange={(e) => setSenha(e.target.value)}
                   />
                 </div>
               </CardContent>
               <CardFooter>
                 <Button className="w-full" type="submit">
-                  Sign in
+                  Entrar
                 </Button>
               </CardFooter>
             </form>

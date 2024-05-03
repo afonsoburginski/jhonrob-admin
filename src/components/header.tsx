@@ -2,6 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import { useRouter, usePathname } from 'next/navigation'
+import Cookies from 'js-cookie'
 import {
   File,
   Home,
@@ -49,6 +50,11 @@ export default function Header() {
 
   const pathnames = pathname.split('/').filter(x => x)
 
+  const logout = () => {
+    Cookies.remove('token');
+    router.push('/login');
+  };
+
   return (
     <header className="flex h-12 items-center gap-4 border-0 bg-muted/40 px-6 sm:static sm:h-auto sm:bg-muted/40 sm:gap-4 sm:pt-3">
       <Breadcrumb className="hidden md:flex">
@@ -93,7 +99,7 @@ export default function Header() {
           <DropdownMenuItem>Settings</DropdownMenuItem>
           <DropdownMenuItem>Support</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Logout</DropdownMenuItem>
+          <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>

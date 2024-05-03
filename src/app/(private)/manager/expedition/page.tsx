@@ -1,5 +1,6 @@
 'use client'
-import { useContext } from 'react';
+import axios from 'axios';
+import { useContext, useEffect } from 'react';
 import { DataContext } from '@/context/DataProvider';
 import Image from 'next/image';
 import Settings from './settings';
@@ -46,6 +47,16 @@ interface Piece {
 
 export default function Expedition() {
   const { piecesData, data } = useContext(DataContext);
+
+  useEffect(() => {
+    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/pessoas`)
+      .then(response => {
+        console.log(response.data);
+      })
+      .catch(error => {
+        console.error('Erro ao buscar produtos:', error);
+      });
+  }, []);
 
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
