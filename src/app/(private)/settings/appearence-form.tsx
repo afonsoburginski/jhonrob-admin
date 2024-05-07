@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { ChevronDownIcon } from "@radix-ui/react-icons"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { useEffect } from 'react';
 
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/form"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "@/components/ui/use-toast"
+import {useTheme} from "@/context/ThemeProvider" 
 
 const appearanceFormSchema = z.object({
   theme: z.enum(["light", "dark"], {
@@ -31,18 +33,24 @@ const appearanceFormSchema = z.object({
 
 type AppearanceFormValues = z.infer<typeof appearanceFormSchema>
 
-// This can come from your database or API.
 const defaultValues: Partial<AppearanceFormValues> = {
   theme: "light",
 }
 
 export function AppearanceForm() {
+  const { theme, setTheme } = useTheme();
   const form = useForm<AppearanceFormValues>({
     resolver: zodResolver(appearanceFormSchema),
-    defaultValues,
+    defaultValues: { theme },
   })
 
+  useEffect(() => {
+    setTheme(form.watch().theme);
+  }, [form.watch().theme]);
+
   function onSubmit(data: AppearanceFormValues) {
+    setTheme(data.theme);
+
     toast({
       title: "You submitted the following values:",
       description: (

@@ -32,107 +32,37 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-const data = {
-  "of": [
-    {
-      "id": 100,
-      "amount": 10,
-      "client": "Cliente 1",
-      "emission": "2022-01-01",
-      "delivery": "2022-01-10",
-      "tag": "SP-1",
-      "products": [16000411, 16000412],
-    },
-  ],
-  "product": [
-    {
-      "id": 16000411,
-      "name": "FIXDR LONG TC",
-      "pieces": [102, 103]
-    },
-    {
-      "id": 16000412,
-      "name": "FIXDR SHORT TC",
-      "pieces": [100, 101]
-    },
-  ],
-  "piece": [
-    {
-      "id": 100,
-      "name": "CONE EXT TAMPA SL 00 CONJ SOLDA",
-      "quantity": 10,
-      "balance": 10,
-      "rdProduct": "1",
-      "unit": "PÇ", 
-      "color": "",
-      "material": "CH 12 GALV",
-      "dimensions": "10x20x30",
-      "weight": "2"
-    },
-    {
-      "id": 101,
-      "name": "CONE EXT TAMPA SL 01 CONJ SOLDA",
-      "quantity": 20,
-      "balance": 20,
-      "rdProduct": "2",
-      "unit": "PÇ",
-      "color": "",
-      "material": "CH 12 GALV",
-      "dimensions": "15x25x35",
-      "weight": "3"
-    },
-    {
-      "id": 102,
-      "name": "CONE EXT TAMPA SL 02 CONJ SOLDA",
-      "quantity": 15,
-      "balance": 15,
-      "rdProduct": "1",
-      "unit": "PÇ",
-      "color": "",
-      "material": "CH 12 GALV",
-      "dimensions": "12x22x32",
-      "weight": "2.5"
-    },
-    {
-      "id": 103,
-      "name": "CONE EXT TAMPA SL 03 CONJ SOLDA",
-      "quantity": 25,
-      "balance": 25,
-      "rdProduct": "1",
-      "unit": "PÇ",
-      "color": "",
-      "material": "CH 12 GALV",
-      "dimensions": "14x24x34",
-      "weight": "3.5"
-    },
-  ]
-};
-
 export default function Settings() {
-  const [selectedOf, setSelectedOf] = useState('0');
-  const [selectedProduct, setSelectedProduct] = useState<number[]>([]);
-  const [selectedPieces, setSelectedPieces] = useState<number[]>([]);
+  const [selectedDocument, setSelectedDocument] = useState('0');
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [documents, setDocuments] = useState([]);
+  const [shipmentItems, setShipmentItems] = useState([]);
+  const [selectedShipmentItems, setSelectedShipmentItems] = useState([]);
   const { setSelectedData } = useContext(DataContext);
 
-  const selectedOfData = data.of.find(ofItem => ofItem.id == Number(selectedOf));
-  const relevantProducts = selectedOfData ? data.product.filter(productItem => selectedOfData.products.includes(productItem.id)) : [];
-
-  const piecesOptions = relevantProducts.flatMap(product => {
-    const pieces = product.pieces.map(pieceId => data.piece.find(pieceItem => pieceItem.id == pieceId)).filter(Boolean);
-    return pieces.map(piece => piece && { id: piece.id, name: piece.name, group: product.name });
-  }).filter((piece): piece is { id: number; name: string; group: string } => piece !== undefined);
+  useEffect(() => {
+    axios.get('http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=100')
+      .then(response => {
+        console.log(response.data);
+        setDocuments(response.data);
+      })
+      .catch(error => {
+        console.error('Erro ao buscar documentos:', error);
+      });
+  }, []);
 
   useEffect(() => {
-    if (selectedOf && selectedPieces.length > 0) {
-      const selectedProductData = relevantProducts.filter(product => product.pieces.some(piece => selectedPieces.includes(piece)));
-      setSelectedProduct(selectedProductData.map(product => product.id));
-      const piecesData = selectedProductData.flatMap(productItem => productItem.pieces.map(pieceId => data.piece.find(pieceItem => pieceItem.id == Number(pieceId)))).filter(piece => piece && selectedPieces.includes(piece.id));
-      setSelectedData({ selectedOfData, selectedProductData, piecesData, data });
-      console.log('OF selecionada:', selectedOf);
-      console.log('Peças selecionadas:', selectedPieces);
-      console.log('Produtos selecionados:', selectedProductData);
+    if (selectedDocument !== '0' && selectedItem) {
+      axios.get(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocument}&item=${selectedItem}`)
+        .then(response => {
+          console.log(response.data);
+          setShipmentItems(response.data);
+        })
+        .catch(error => {
+          console.error('Erro ao buscar itens de embarque:', error);
+        });
     }
-  }, [selectedOf, selectedPieces]);
+  }, [selectedDocument, selectedItem]);
 
   return (
     <div
@@ -140,21 +70,29 @@ export default function Settings() {
     >
       <form className="grid w-full items-start gap-6">
         <fieldset className="grid gap-6 rounded-lg border p-4">
-          <legend className="-ml-1 px-1 text-sm font-medium">Configuração</legend>
+          <legend className="-ml-1 px-1 text-sm font-medium">Ordens de produção</legend>
           <div className="grid gap-3">
-            <Select value={selectedOf} onValueChange={setSelectedOf}>
-              <SelectTrigger id="of" className="items-start [&_[data-description]]:hidden">
-                <SelectValue placeholder="Selecione a OF" />
+          <Select value={`item-${documents.findIndex(doc => doc.documento.toString() === selectedDocument)}-${selectedDocument}`} onValueChange={(value) => {
+            const documentIndex = value.split('-')[1];
+            const selectedDocumentData = documents[documentIndex];
+            if (selectedDocumentData) {
+              setSelectedDocument(selectedDocumentData?.documento?.toString());
+              setSelectedItem(selectedDocumentData?.item);
+              setSelectedData({ documentData: selectedDocumentData });
+            }
+          }}>
+              <SelectTrigger id="document" className="items-start [&_[data-description]]:hidden">
+                <SelectValue placeholder="Selecione o documento" />
               </SelectTrigger>
               <SelectContent>
-                {data.of.map((ofItem, index) => (
-                  <SelectItem key={index} value={ofItem.id.toString()}>
+                {documents.map((documentItem, index) => (
+                  <SelectItem key={index} value={`item-${index}-${documentItem?.documento?.toString()}`}>
                     <div className="flex items-start gap-3 text-muted-foreground">
                       <FileText className="size-5" />
                       <div className="grid gap-0.5">
                         <p>
-                          <span className="font-medium text-foreground">OF {ofItem.id}</span>{" "}
-                          <span className="text-muted-foreground">{ofItem.tag}</span>
+                          <span className="font-medium text-foreground">OF {documentItem?.documento}</span>{" "}
+                          <span className="font-medium text-muted-foreground ml-2">Item: {documentItem?.item}</span>
                         </p>
                       </div>
                     </div>
@@ -164,12 +102,12 @@ export default function Settings() {
             </Select>
           </div>
           <div className="grid gap-3">
-            <Label htmlFor="product">Produtos</Label>
+          <Label htmlFor="product">Itens de Embarque</Label>
             <MultiSelect 
-              options={piecesOptions}
-              value={selectedPieces ? piecesOptions.filter(item => selectedPieces.map(String).includes(item.id.toString())) : []}
-              onValueChange={selectedOptions => setSelectedPieces(selectedOptions.map(option => Number(option.id)))}
-              placeholder="Selecione as peças..."
+              options={shipmentItems.map(item => ({ id: item.produto, name: `Produto: ${item.produto}`, group: `Item ${item.item}` }))}
+              value={selectedShipmentItems.length > 0 && shipmentItems.length > 0 ? shipmentItems.filter(item => selectedShipmentItems.includes(item.produto)).map(item => ({ id: item.produto, name: `Produto: ${item.produto}`, group: `Item ${item.item}` })) : []}
+              onValueChange={selectedOptions => setSelectedShipmentItems(selectedOptions.map(option => option.id))}
+              placeholder="Selecione os itens de embarque..."
             />
           </div>
         </fieldset>
@@ -177,7 +115,7 @@ export default function Settings() {
           <legend className="-ml-1 px-1 text-sm font-medium">Dados da OF</legend>
           <div className="grid gap-3">
             <Card>
-              <CardHeader>
+              {/* <CardHeader>
                 <div className="flex justify-between">
                   <div className="flex flex-col w-1/2">
                     <CardDescription><b>OF:</b> {selectedOfData?.id}</CardDescription>
@@ -191,7 +129,7 @@ export default function Settings() {
                     <CardDescription><b>Tag:</b> {selectedOfData?.tag}</CardDescription>
                   </div>
                 </div>
-              </CardHeader>
+              </CardHeader> */}
               <CardContent className="overflow-auto max-h-[30vh] min-h-[30vh]">
                 {/* <Table>
                   <TableHeader>

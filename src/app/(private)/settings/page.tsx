@@ -1,40 +1,115 @@
-// page.tsx
-import React from "react"
-import { Separator } from "@/components/ui/separator"
-import { ProfileForm } from "./profile-form"
-import { SidebarNav } from "./components/sidebar-nav"
+import Link from "next/link"
+import { CircleUser, Menu, Package2, Search } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+
+import { AppearanceForm } from "./appearence-form"
+
+const user = {
+  name: "Nome do Usuário",
+  image: "url_da_imagem_do_usuario",
+  password: "senha_do_usuario",
+  companyEmail: "email_da_empresa"
+}
 
 export default function Settings() {
   return (
-    <div className="flex h-full w-full flex-col bg-muted/40">
-      <div className="hidden space-y-6 p-10 md:block">
-        <div className="space-y-0.5">
-          <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
-          <p className="text-muted-foreground">
-            Manage your account settings and set e-mail preferences.
-          </p>
-        </div>
-        <Separator className="my-6" />
-        <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
-          <aside className="-mx-4 lg:w-1/5">
-            <SidebarNav />
-          </aside>
-          <div className="flex-1 lg:max-w-4xl">
-            <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-              <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                <div>
-                  <h3 className="text-lg font-medium">Profile</h3>
-                  <p className="text-sm text-muted-foreground">
-                    This is how others will see you on the site.
-                  </p>
+    <main className="flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 bg-muted/40 p-4 md:gap-8 md:p-10">
+      <div className="grid w-full gap-2">
+        <h1 className="text-3xl font-semibold">Settings</h1>
+      </div>
+      <div className="grid w-full items-start gap-6 md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr]">
+        <nav
+          className="grid gap-4 text-sm text-muted-foreground" x-chunk="dashboard-04-chunk-0"
+        >
+          <Link href="#" className="font-semibold text-primary">
+            General
+          </Link>
+          <Link href="#">Security</Link>
+          <Link href="#">Integrations</Link>
+          <Link href="#">Support</Link>
+          <Link href="#">Organizations</Link>
+          <Link href="#">Advanced</Link>
+        </nav>
+        <div className="grid gap-6">
+          <Card x-chunk="dashboard-04-chunk-1">
+            <CardHeader>
+              <CardTitle>User Data</CardTitle>
+              <CardDescription>
+                Your personal information.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form className="flex flex-col gap-4">
+                <div className="flex gap-4">
+                  <div className="flex flex-col flex-1">
+                    <Label className="font-medium">Imagem</Label>
+                    <Input placeholder="Image URL" defaultValue={user.image} />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <Label className="font-medium">Nome</Label>
+                    <Input placeholder="User Name" defaultValue={user.name} />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <Label className="font-medium">Senha</Label>
+                    <Input placeholder="Password" defaultValue={user.password} type="password" />
+                  </div>
                 </div>
-                <Separator />
-                <ProfileForm />
-              </main>
-            </div>
-          </div>
+                <div className="flex flex-col flex-1">
+                  <Label className="font-medium">Email da empresa</Label>
+                  <Input placeholder="Company Email" defaultValue={user.companyEmail} />
+                </div>
+                <Label className="font-medium">Regra do usuário</Label>
+                <RadioGroup defaultValue="user">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="admin" id="admin" />
+                    <Label htmlFor="admin">Admin</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="user" id="user" />
+                    <Label htmlFor="user">User</Label>
+                  </div>
+                </RadioGroup>
+              </form>
+            </CardContent>
+            <CardFooter className="border-t px-6 py-4">
+              <Button>Save</Button>
+            </CardFooter>
+          </Card>
+          <Card x-chunk="dashboard-04-chunk-2">
+            <CardHeader>
+              <CardTitle>Aparência</CardTitle>
+              <CardDescription>
+                The directory within your project, in which your plugins are
+                located.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AppearanceForm />
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

@@ -26,38 +26,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-interface Product {
-  id: number;
-  name: string;
-  pieces: number[];
-}
-
-interface Piece {
-  id: number;
-  name: string;
-  quantity: number;
-  balance: number;
-  rdProduct: string;
-  unit: string;
-  color: string;
-  material: string;
-  dimensions: string;
-  weight: string;
-}
 
 export default function Expedition() {
-  const { piecesData, data } = useContext(DataContext);
-
+  const { documentData, piecesData } = useContext(DataContext);
   useEffect(() => {
-    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/pessoas`)
-      .then(response => {
-        console.log(response.data);
-      })
-      .catch(error => {
-        console.error('Erro ao buscar produtos:', error);
-      });
-  }, []);
-
+    console.log('documentData:', documentData);
+  }, [documentData]);
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
       <div className="flex flex-col sm:gap-4 sm:py-4">
@@ -65,16 +39,16 @@ export default function Expedition() {
           <Tabs defaultValue="of">
             <div className="flex items-center justify-between">
               <TabsList>
-                <TabsTrigger value="of">OF</TabsTrigger>
+                <TabsTrigger value="of">Embarque</TabsTrigger>
                 <TabsTrigger value="expedition">Expedição</TabsTrigger>
               </TabsList>
             </div>
             <TabsContent value="of" className="flex flex-row justify-around gap-8">
               <Card x-chunk="dashboard-06-chunk-1" className="flex-grow">
                 <CardHeader>
-                  <CardTitle>OF</CardTitle>
+                  <CardTitle>Embarque</CardTitle>
                   <CardDescription>
-                    Selecione a OF para a expedição.
+                    Selecione a OF e os itens que serão embarcados
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
@@ -105,19 +79,19 @@ export default function Expedition() {
                 </CardHeader>
                 <CardContent className="border-2 rounded-lg border-gray-400 p-1 px-4 grid grid-cols-4 gap-2 items-start">
                   <div>
-                    <CardDescription className="text-xs"><b>O.F:</b> {data?.selectedOfData?.id ?? '-'}</CardDescription>
-                    <CardDescription className="text-xs"><b>Cliente:</b> {data?.selectedOfData?.client ?? '-'}</CardDescription>
-                    <CardDescription className="text-xs"><b>Produto:</b> {data?.selectedProductData?.id ?? '-'}</CardDescription>
+                    <CardDescription className="text-xs"><b>O.F:</b> {documentData?.documento}</CardDescription>
+                    <CardDescription className="text-xs"><b>Cliente:</b> {`(${documentData?.produto?.codigo}) ${documentData?.pessoa?.descricao}`}</CardDescription>
+                    <CardDescription className="text-xs"><b>Produto:</b> {`(${documentData?.produto?.codigo}) ${documentData?.produto?.descricao}`}</CardDescription>
                   </div>
                   <div>
-                    <CardDescription className="text-xs"><b>Quantidade:</b> {data?.selectedOfData?.amount ?? '-'}</CardDescription>
+                    <CardDescription className="text-xs"><b>Quantidade:</b> {documentData?.selectedOfData?.amount ?? '-'}</CardDescription>
                   </div>
                   <div>
-                    <CardDescription className="text-xs"><b>Dt.Emissão:</b> {data?.selectedOfData?.emission ?? '-'}</CardDescription>
-                    <CardDescription className="text-xs"><b>Dt.Entrega:</b> {data?.selectedOfData?.delivery ?? '-'}</CardDescription>
+                    <CardDescription className="text-xs"><b>Dt.Emissão:</b> {new Date(documentData?.dataCadastro).toLocaleDateString()}</CardDescription>
+                    <CardDescription className="text-xs"><b>Dt.Entrega:</b> {new Date(documentData?.dataPrevEntrega).toLocaleDateString()}</CardDescription>
                   </div>
                   <div className="flex items-center justify-center">
-                    <CardDescription className="font-bold">Tag: {data?.selectedOfData?.tag ?? '-'}</CardDescription>
+                    <CardDescription className="font-bold">Tag: {documentData?.selectedOfData?.tag ?? '-'}</CardDescription>
                   </div>
                 </CardContent>
                 <CardDescription className="text-xs font-bold mt-5">{'Status = { P = Pendente, E = Embarcado, C = Cancelado, N = Não Retirado, R = Retirado }'}</CardDescription>
@@ -141,7 +115,7 @@ export default function Expedition() {
                       <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-6">Local: Expedição</TableHead>
                     </TableRow>
                     <TableRow className="h-2"></TableRow>
-                    {data?.selectedProductData?.map((product: Product) => {
+                    {/* {data?.selectedProductData?.map((product: Product) => {
                       const productPieces = piecesData.filter((piece: Piece) => product.pieces.includes(piece.id));
                       return (
                         <>
@@ -166,7 +140,7 @@ export default function Expedition() {
                           ))}
                         </>
                       );
-                    })}
+                    })} */}
                   </TableBody>
                 </Table>
                 <CardFooter className="flex justify-between items-center p-0 mt-2">

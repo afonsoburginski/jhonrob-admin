@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster"
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { DataProvider } from "@/context/DataProvider";
+import { Providers } from "@/context/Providers";
+import { QueryClient, QueryClientProvider } from 'react-query';
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
 const inter = Inter({ subsets: ["latin"] });
@@ -19,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <DataProvider>  
+    <Providers>  
       <TooltipProvider>
         <html lang="en">
           <body className={inter.className}>
@@ -36,6 +37,6 @@ export default function RootLayout({
           </body>
         </html>
       </TooltipProvider>
-    </DataProvider>
+    </Providers>
   );
 }

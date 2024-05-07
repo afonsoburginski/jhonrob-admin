@@ -87,7 +87,7 @@ export function MultiSelect({ options, value, onValueChange, placeholder }: { op
       </div>
       <div className="relative mt-2">
         {open && Object.keys(groupedSelectables).length > 0 ?
-          <div className="absolute w-full z-10 top-0 rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
+          <div className="absolute w-full z-10 top-0 rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in" style={{ overflow: 'auto', maxHeight: '400px' }}>
             {Object.entries(groupedSelectables).map(([group, options]) => (
               <CommandGroup className="h-full overflow-auto" key={group}>
                 <div className="font-semibold">{group}</div>
