@@ -7,7 +7,7 @@ import { DataContext } from '@/context/DataProvider';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { MultiSelect } from '@/components/multiSelect';
+import GroupedMultiSelect from '@/components/GroupedMultiSelect';
 import {
   Select,
   SelectContent,
@@ -37,8 +37,7 @@ export default function Settings() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [shipmentItems, setShipmentItems] = useState([]);
-  const [selectedShipmentItems, setSelectedShipmentItems] = useState([]);
-  const { setSelectedData } = useContext(DataContext);
+  const { documentData, setSelectedData, shipmentData, setShipmentData } = useContext(DataContext);
 
   useEffect(() => {
     axios.get('http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=100')
@@ -64,6 +63,12 @@ export default function Settings() {
     }
   }, [selectedDocument, selectedItem]);
 
+  useEffect(() => {
+    setShipmentData(shipmentData);
+    console.log("Dados enviados para DataContext: ", shipmentData);
+  }, [shipmentData, setShipmentData]);
+
+
   return (
     <div
       className="relative hidden flex-col items-start gap-8 md:flex"
@@ -86,7 +91,7 @@ export default function Settings() {
               </SelectTrigger>
               <SelectContent>
                 {documents.map((documentItem, index) => (
-                  <SelectItem key={index} value={`item-${index}-${documentItem?.documento?.toString()}`}>
+                  <SelectItem key={index} value={`item-${index}-${documentItem?.documento.toString()}`}>
                     <div className="flex items-start gap-3 text-muted-foreground">
                       <FileText className="size-5" />
                       <div className="grid gap-0.5">
@@ -101,13 +106,18 @@ export default function Settings() {
               </SelectContent>
             </Select>
           </div>
-          <div className="grid gap-3">
-          <Label htmlFor="product">Itens de Embarque</Label>
-            <MultiSelect 
-              options={shipmentItems.map(item => ({ id: item.produto, name: `Produto: ${item.produto}`, group: `Item ${item.item}` }))}
-              value={selectedShipmentItems.length > 0 && shipmentItems.length > 0 ? shipmentItems.filter(item => selectedShipmentItems.includes(item.produto)).map(item => ({ id: item.produto, name: `Produto: ${item.produto}`, group: `Item ${item.item}` })) : []}
-              onValueChange={selectedOptions => setSelectedShipmentItems(selectedOptions.map(option => option.id))}
-              placeholder="Selecione os itens de embarque..."
+          <div className="grid gap-3 max-w-[1118px]">
+            <Label htmlFor="product">Itens de Embarque</Label>
+            <GroupedMultiSelect 
+              shipmentItems={shipmentItems}
+              value={Array.isArray(shipmentData) ? shipmentData.map(data => ({ value: data.codigoProduto, label: data.codigoProduto })) : []}
+              onChange={selectedOptions => {
+                const selectedCodes = selectedOptions.map(option => option.value);
+                const selectedData = shipmentItems.filter(item => selectedCodes.includes(item.codigoProduto));
+                setShipmentData(selectedData);
+                setSelectedData({ shipmentData: selectedData });
+                console.log("Dados enviados para DataContext: ", selectedData);
+              }}
             />
           </div>
         </fieldset>
@@ -115,69 +125,61 @@ export default function Settings() {
           <legend className="-ml-1 px-1 text-sm font-medium">Dados da OF</legend>
           <div className="grid gap-3">
             <Card>
-              {/* <CardHeader>
+              <CardHeader>
                 <div className="flex justify-between">
                   <div className="flex flex-col w-1/2">
-                    <CardDescription><b>OF:</b> {selectedOfData?.id}</CardDescription>
-                    <CardDescription><b>Cliente:</b> {selectedOfData?.client}</CardDescription>
+                    <CardDescription><b>OF:</b> {documentData?.documento}</CardDescription>
+                    <CardDescription><b>Cliente:</b> ({documentData?.pessoa?.codigo}) {documentData?.pessoa?.descricao}</CardDescription>
                   </div>
                   <div className="flex flex-col w-1/4">
-                    <CardDescription><b>Dt.Emissão:</b> {selectedOfData?.emission}</CardDescription>
-                    <CardDescription><b>Dt.Entrega</b> {selectedOfData?.delivery}</CardDescription>
+                    <CardDescription><b>Dt.Emissão:</b> {new Date(documentData?.dataCadastro).toLocaleDateString()}</CardDescription>
+                    <CardDescription><b>Dt.Entrega</b> {new Date(documentData?.dataPrevEntrega).toLocaleDateString()}</CardDescription>
                   </div>
                   <div className="flex flex-col w-1/12">
-                    <CardDescription><b>Tag:</b> {selectedOfData?.tag}</CardDescription>
+                    <CardDescription><b>Tag:</b> {documentData?.tag}</CardDescription>
                   </div>
                 </div>
-              </CardHeader> */}
-              <CardContent className="overflow-auto max-h-[30vh] min-h-[30vh]">
-                {/* <Table>
+              </CardHeader>
+              <CardContent className="overflow-auto max-h-[32vh] min-h-[32vh]">
+                <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[100px]">Código</TableHead>
-                      <TableHead>Peça</TableHead>
+                      <TableHead>Produto</TableHead>
                       <TableHead className="w-[100px]">Peso</TableHead>
                       <TableHead className="w-[100px]">Qtd</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {selectedProductData.map((product) => {
-                      const productPieces = product.pieces.map(pieceId => data.piece.find(pieceItem => pieceItem.id === pieceId));
+                  {shipmentData.map((item, index) => {
                       return (
-                        <>
-                          <TableRow className="bg-gray-200">
-                            <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-6">({product.id}) {product.name}</TableHead>
-                          </TableRow>
-                          {productPieces.map((piece, index) => (
-                            <TableRow key={index}>
-                              <TableCell className="font-semibold py-1">{piece?.id}</TableCell>
-                              <TableCell className="py-1">
-                                <Label htmlFor={`name-${index}`} className="sr-only">
-                                  Código
-                                </Label>
-                                <Input className="h-8 text-xs" id={`name-${index}`} type="button" defaultValue={piece?.name} />
-                              </TableCell>
-                              <TableCell className="py-1">
-                                <Label htmlFor={`weight-${index}`} className="sr-only">
-                                  Peso
-                                </Label>
-                                <Input className="h-8 text-xs" id={`weight-${index}`} type="text" defaultValue={piece?.weight}/>
-                              </TableCell>
-                              <TableCell className="py-1">
-                                <Label htmlFor={`quantity-${index}`} className="sr-only">
-                                  Qtd
-                                </Label>
-                                <Input className="h-8 text-xs" id={`quantity-${index}`} type="number" defaultValue={piece?.quantity} />
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </>
+                        <TableRow key={index}>
+                          <TableCell className="text-xs py-1">{item.codigoProduto}</TableCell>
+                          <TableCell className="py-1">
+                            <Label htmlFor={`name-${index}`} className="sr-only">
+                              Produto
+                            </Label>
+                            <Input className="h-8 text-xs" id={`name-${index}`} type="button" defaultValue={item.descricaoProduto} />
+                          </TableCell>
+                          <TableCell className="py-1">
+                            <Label htmlFor={`weight-${index}`} className="sr-only">
+                              Peso
+                            </Label>
+                            <Input className="h-8 text-xs" id={`weight-${index}`} type="button" defaultValue={item.peso}/>
+                          </TableCell>
+                          <TableCell className="py-1">
+                            <Label htmlFor={`quantity-${index}`} className="sr-only">
+                              Qtd
+                            </Label>
+                            <Input className="h-8 text-xs" id={`quantity-${index}`} type="number" defaultValue={item.quantidade} max={item.quantidade} step="1" onKeyPress={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
+                          </TableCell>
+                        </TableRow>
                       );
                     })}
                   </TableBody>
-                </Table> */}
+                </Table>
               </CardContent>
-              <CardFooter className="justify-center border-t p-2">
+              <CardFooter className="justify-center border-t p-1">
                 <Button size="sm" variant="ghost" className="gap-1">
                   <CheckCircle className="h-3.5 w-3.5" />
                     Save

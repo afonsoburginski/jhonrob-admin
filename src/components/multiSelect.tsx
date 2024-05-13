@@ -11,7 +11,11 @@ import {
 } from "@/components/ui/command";
 import { Command as CommandPrimitive } from "cmdk";
 
-type Option = { id: string | number, name: string, group: string | number };
+type Option = { id: string | number, name: string, group: string | number, data: any };
+
+function cleanId(id: string | number) {
+  return String(id).replace(/[^a-zA-Z0-9]/g, '_');
+}
 
 export function MultiSelect({ options, value, onValueChange, placeholder }: { options: Option[], value: Option | Option[], onValueChange: (value: Option[]) => void, placeholder: string }) {
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -19,7 +23,7 @@ export function MultiSelect({ options, value, onValueChange, placeholder }: { op
   const [inputValue, setInputValue] = React.useState("");
 
   const handleUnselect = React.useCallback((option: Option) => {
-    const newValue = Array.isArray(value) ? value.filter(s => String(s.id) !== String(option.id)) : [];
+    const newValue = Array.isArray(value) ? value.filter(s => s.data !== option.data) : [];
     onValueChange(newValue);
   }, [value, onValueChange]);
 
@@ -39,7 +43,7 @@ export function MultiSelect({ options, value, onValueChange, placeholder }: { op
     }
   }, [onValueChange, value]);
 
-  const selectables = options.filter(option => !Array.isArray(value) ? String(option.id) !== String(value.id) : !value.map(v => String(v.id)).includes(String(option.id)));
+  const selectables = options.filter(option => !Array.isArray(value) ? option.data !== value.data : !value.map(v => v.data).includes(option.data));
 
   const groupedSelectables = selectables.reduce((groups: Record<string, Option[]>, option) => {
     (groups[String(option.group)] = groups[String(option.group)] || []).push(option);
@@ -52,35 +56,35 @@ export function MultiSelect({ options, value, onValueChange, placeholder }: { op
         className="group border border-input px-3 py-2 text-sm ring-offset-background rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
       >
         <div className="flex gap-1 flex-wrap">
-          {Array.isArray(value) ? value.map((framework) => {
-            return (
-              <Badge key={framework.id} variant="secondary">
-                {framework.name.substring(0, 22)}
-                <button
-                  className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleUnselect(framework);
-                    }
-                  }}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                  onClick={() => handleUnselect(framework)}
-                >
-                  <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                </button>
-              </Badge>
-            )
-          }) : null}
+        {Array.isArray(value) ? value.map((framework) => {
+          return (
+            <Badge key={cleanId(framework.id)} variant="secondary">
+              {framework.name ? framework.name.substring(0, 22) : ''}
+              <button
+                className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleUnselect(framework);
+                  }
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onClick={() => handleUnselect(framework)}
+              >
+                <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+              </button>
+            </Badge>
+          )
+        }) : null}
           <CommandPrimitive.Input
             ref={inputRef}
             value={inputValue}
             onValueChange={setInputValue}
             onBlur={() => setOpen(false)}
             onFocus={() => setOpen(true)}
-            placeholder={placeholder} // Usando a propriedade placeholder aqui
+            placeholder={placeholder}
             className="ml-2 bg-transparent outline-none placeholder:text-muted-foreground flex-1"
           />
         </div>
@@ -93,14 +97,14 @@ export function MultiSelect({ options, value, onValueChange, placeholder }: { op
                 <div className="font-semibold">{group}</div>
                 {options.map((option: Option) => (
                   <CommandItem
-                    key={option.id}
+                    key={cleanId(option.id)}
                     onMouseDown={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                     }}
                     onSelect={() => {
                       setInputValue("");
-                      const newOptions = Array.isArray(value) ? [...value, option] : [option];
+                      const newOptions = Array.isArray(value) ? [...value, { ...option, data: cleanId(option.data) }] : [{ ...option, data: cleanId(option.data) }];
                       onValueChange(newOptions);
                     }}
                     className={"cursor-pointer"}

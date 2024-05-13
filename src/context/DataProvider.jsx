@@ -6,11 +6,12 @@ export const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
   const [selectedData, setSelectedData] = useState(null);
+  const [shipmentData, setShipmentData] = useState([]);
 
   const documentData = useMemo(() => selectedData?.documentData ?? null, [selectedData]);
 
   return (
-    <DataContext.Provider value={{ documentData, setSelectedData }}>
+    <DataContext.Provider value={{ documentData, setSelectedData, shipmentData, setShipmentData }}>
       {children}
     </DataContext.Provider>
   );
