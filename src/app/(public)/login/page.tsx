@@ -1,11 +1,9 @@
 // src/app/(public)/login/page.tsx
 'use client'
-import axios from 'axios';
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Cookies from 'js-cookie';
 import {
   Card,
   CardContent,
@@ -17,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { signIn } from 'next-auth/react';
 
 export default function LoginForm() {
   const [login, setLogin] = useState("");
@@ -28,23 +27,15 @@ export default function LoginForm() {
     event.preventDefault();
   
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/usuarios/login`, {
-        login,
-        senha,
+      const response = await signIn('credentials', { 
+        redirect: false, 
+        login, 
+        senha 
       });
   
-      Cookies.set('token', response.data.token, { expires: 30 });
-  
-      console.log('Login realizado com sucesso. Dados da resposta:', response.data);
-  
-      // Obter dados do usuário
-      const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/usuarios`, {
-        headers: {
-          'Authorization': `Bearer ${response.data.token}`
-        }
-      });
-  
-      console.log('Dados do usuário:', userResponse.data);
+      if (response.error) {
+        throw new Error(response.error);
+      }
   
       toast({
         title: "Sucesso!",

@@ -203,10 +203,8 @@ export default function Dashboard() {
             </Card>
           ))}
         </div>
-        <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-          <Card
-            className="xl:col-span-2" x-chunk="dashboard-01-chunk-4"
-          >
+        <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-4">
+          <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
             <CardHeader className="flex flex-row items-center">
               <div className="grid gap-2">
                 <CardTitle>Transactions</CardTitle>
@@ -223,7 +221,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={data}>
+                <BarChart data={data} >
                   <XAxis
                     dataKey="name"
                     stroke="#888888"
@@ -246,6 +244,14 @@ export default function Dashboard() {
                   />
                 </BarChart>
               </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          <Card x-chunk="dashboard-01-chunk-5">
+            <CardHeader>
+              <CardTitle>Recent Sales</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-8">
+              
             </CardContent>
           </Card>
           <Card x-chunk="dashboard-01-chunk-5">

@@ -1,9 +1,10 @@
 'use client'
 import axios from 'axios';
 import { useContext, useEffect } from 'react';
-import { DataContext } from '@/context/DataProvider';
 import Image from 'next/image';
+import { DataContext } from '@/context/DataProvider';
 import Settings from './settings';
+import { Button } from "@/components/ui/button"
 import {
   Tabs,
   TabsContent,
@@ -26,6 +27,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from "@/components/ui/pagination"
+import {
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"
 import React from 'react';
 
 export default function Expedition() {
@@ -33,6 +43,15 @@ export default function Expedition() {
   const totalWeight = shipmentData?.reduce((total, item) => total + (item?.peso ? parseFloat(item.peso) : 0), 0);
   const totalQuantity = shipmentData?.reduce((total, item) => total + (item?.quantidade ? parseFloat(item.quantidade) : 0), 0);
   const totalBalance = shipmentData?.reduce((total, item) => total + (item?.quantidadeEnviada ? parseFloat(item.quantidadeEnviada) : 0), 0);
+
+  function groupBy(array, key) {
+    return array.reduce((result, currentValue) => {
+      (result[currentValue[key]] = result[currentValue[key]] || []).push(currentValue);
+      return result;
+    }, {});
+  }
+  
+  const groupedShipmentData = groupBy(shipmentData, 'codigoProdutoPrimeiroNivel');
 
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
@@ -63,8 +82,9 @@ export default function Expedition() {
                   </div>
                 </CardFooter>
               </Card>
-              <Card x-chunk="dashboard-06-chunk-1" className="w-[850px] p-6 ">
-                <CardHeader className="border-y-2 border-gray-400 p-0">
+              {/* AQUI COMEÇA O ROMANEIO */}
+              <Card x-chunk="dashboard-06-chunk-1" className="w-[900px] max-h-[100vh] p-6">
+                <CardHeader className="border-t-2 border-gray-400 p-0 mb-1">
                   <div className="flex justify-between items-center h-10">
                     <div className='flex flex-col items-start'>
                       <Image src="/logo.png" alt="Logo" width="150" height="50" priority/>
@@ -79,26 +99,26 @@ export default function Expedition() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="border-2 rounded-lg border-gray-400 p-1 px-4 grid grid-cols-4 gap-2 items-start">
+                <CardContent className="border-2 rounded-lg border-gray-400 p-0 px-4 grid grid-cols-4 gap-2 items-start">
                   <div>
-                    <CardDescription className="text-xs"><b>O.F:</b> {documentData?.documento || ''}</CardDescription>
-                    <CardDescription className="text-xs"><b>Cliente:</b> {`(${documentData?.produto?.codigo || ''}) ${documentData?.pessoa?.descricao || ''}`}</CardDescription>
-                    <CardDescription className="text-xs"><b>Produto:</b> {`(${documentData?.produto?.codigo || ''}) ${documentData?.produto?.descricao || ''}`}</CardDescription>
+                    <CardDescription className="text-xs"><b>O.F:</b> {documentData?.documento || ''} {documentData?.item || ''}</CardDescription>
+                    <CardDescription className="text-xs whitespace-nowrap"><b>Cliente:</b> {`(${documentData?.pessoa?.codigo || ''}) ${documentData?.pessoa?.descricao || ''}`}</CardDescription>
+                    <CardDescription className="text-xs whitespace-nowrap"><b>Produto:</b> {`(${documentData?.produto?.codigo || ''}) ${documentData?.produto?.descricao || ''}`}</CardDescription>
                   </div>
                   <div>
-                    <CardDescription className="text-xs"><b>Quantidade:</b> {documentData?.selectedOfData?.amount || ''}</CardDescription>
+                    <CardDescription className="text-xs"><b>Quantidade:</b> {documentData?.quantidade || ''}</CardDescription>
                   </div>
                   <div>
                     <CardDescription className="text-xs"><b>Dt.Emissão:</b> {documentData?.dataCadastro ? new Date(documentData?.dataCadastro).toLocaleDateString() : ''}</CardDescription>
                     <CardDescription className="text-xs"><b>Dt.Entrega:</b> {documentData?.dataPrevEntrega ? new Date(documentData?.dataPrevEntrega).toLocaleDateString() : ''}</CardDescription>
                   </div>
                   <div className="flex items-center justify-center">
-                    <CardDescription className="font-bold">Tag: {documentData?.selectedOfData?.tag || ''}</CardDescription>
+                    <CardDescription className="font-bold">Tag: {documentData?.tag || ''}</CardDescription>
                   </div>
                 </CardContent>
                 <CardDescription className="text-xs font-bold mt-5">{'Status = { P = Pendente, E = Embarcado, C = Cancelado, N = Não Retirado, R = Retirado }'}</CardDescription>
                 <Table className="w-full">
-                  <TableHeader>
+                  <thead>
                     <TableRow>
                       <TableHead className="text-xs text-right font-bold h-6 px-1">Qdt</TableHead>
                       <TableHead className="text-xs text-right font-bold h-6 px-1">Saldo</TableHead>
@@ -111,30 +131,39 @@ export default function Expedition() {
                       <TableHead className="text-xs text-center font-bold h-6 px-1">(AxLxC)</TableHead>
                       <TableHead className="text-xs text-right font-bold h-6 pr-0">Peso tot</TableHead>
                     </TableRow>
-                  </TableHeader>
-                  <TableRow className="bg-gray-200">
+                  </thead>
+                  <tbody>
+                    <TableRow className="bg-gray-200">
                       <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-6">Local: Expedição</TableHead>
                     </TableRow>
-                  <TableBody className="border-b">
-                    {shipmentData?.map((item, index) => {
+                    <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-1.5"/>
+                    {Object.entries(groupedShipmentData).map(([codigoProdutoPrimeiroNivel, group], groupIndex) => {
+                      const descricaoProdutoPrimeiroNivel = group[0].descricaoProdutoPrimeiroNivel;
                       return (
-                        <TableRow key={index}>
-                          <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.quantidade ?? '-'}</TableCell>
-                          <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.quantidadeEnviada ?? '-'}</TableCell>
-                          <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.codigoProduto ?? '-'}</TableCell>
-                          <TableCell className="text-xs text-center py-1 px-1 border-r">{item?.revisaoDesenho ?? '-'}</TableCell>
-                          <TableCell className="text-xs text-start py-1 px-1 border-r">{item?.descricaoProduto ?? '-'}</TableCell>
-                          <TableCell className="text-xs text-center py-1 px-1 border-r">{item?.unidade ?? '-'}</TableCell>
-                          <TableCell className="text-xs text-start py-1 px-1 border-r">{item?.cor ?? '-'}</TableCell>
-                          <TableCell className="text-xs text-center py-1 px-0 border-r">{item?.material ?? '-'}</TableCell>
-                          <TableCell className="text-[10px] text-center py-1 px-0 border-r">  {item?.medidas ? item.medidas.split('x').map(num => parseFloat(num).toFixed(2)).join('x') : '-'}</TableCell>
-                          <TableCell className="text-xs text-right py-1 px-1">{item?.peso ?? '-'}</TableCell>
-                        </TableRow>
+                        <React.Fragment key={groupIndex}>
+                          <TableRow className="bg-gray-200">
+                            <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-6">({codigoProdutoPrimeiroNivel}) {descricaoProdutoPrimeiroNivel}</TableHead>
+                          </TableRow>
+                          {group.map((item, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.quantidade ?? '-'}</TableCell>
+                              <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.quantidadeEnviada ?? '-'}</TableCell>
+                              <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.codigoProduto ?? '-'}</TableCell>
+                              <TableCell className="text-xs text-center py-1 px-1 border-r">{item?.revisaoDesenho ?? '-'}</TableCell>
+                              <TableCell className="text-xs text-start py-1 px-1 border-r">{item?.descricaoProduto ?? '-'}</TableCell>
+                              <TableCell className="text-xs text-center py-1 px-1 border-r">{item?.unidade ?? '-'}</TableCell>
+                              <TableCell className="text-xs text-start py-1 px-1 border-r">{item?.cor ?? '-'}</TableCell>
+                              <TableCell className="text-[10px] text-center py-1 px-0 border-r min-w-16">{item?.material ?? '-'}</TableCell>
+                              <TableCell className="text-[10px] text-center py-1 px-0 border-r">{item?.medidas ? item.medidas.split('x').map(num => parseFloat(num).toFixed(2)).join('x') : '-'}</TableCell>
+                              <TableCell className="text-xs text-right py-1 px-1">{item?.peso ?? '-'}</TableCell>
+                            </TableRow>
+                          ))}
+                        </React.Fragment>
                       );
                     })}
-                  </TableBody>
+                  </tbody>
                 </Table>
-                <CardFooter className="flex justify-between items-center p-0 mt-2">
+                <CardContent className="flex justify-between items-center p-0 mt-2">
                   <div className="flex gap-1 w-24 px-2 justify-end">
                     <div className="flex flex-col items-end gap-4" style={{ flex: '0 0 40px' }}>
                       <CardDescription className="text-xs">{Math.round(totalQuantity)}</CardDescription>
@@ -155,7 +184,7 @@ export default function Expedition() {
                       <CardDescription className="text-xs">{totalWeight.toFixed(2)}</CardDescription>
                     </div>
                   </div>
-                </CardFooter>
+                </CardContent>
               </Card>
             </TabsContent>
             <TabsContent value="expedition">

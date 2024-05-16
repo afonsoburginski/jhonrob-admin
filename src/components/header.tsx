@@ -1,4 +1,6 @@
+// header.tsx
 'use client'
+import React, { useEffect, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import { useRouter, usePathname } from 'next/navigation'
@@ -37,23 +39,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import React from "react"
+import { signOut, getSession } from 'next-auth/react';
+import { Session } from 'next-auth';
 
 export default function Header() {
-  const router = useRouter()
   const pathname = usePathname()
+  const pathnames = pathname.split('/').filter(x => x)
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const session = await getSession();
+      setSession(session);
+    };
+
+    fetchSession();
+  }, []);
 
   if (!pathname) {
     return null;
   }
-
-  const pathnames = pathname.split('/').filter(x => x)
-
-  const logout = () => {
-    Cookies.remove('token');
-    router.push('/login');
-  };
 
   return (
     <header className="flex h-12 items-center gap-4 border-0 bg-muted/40 px-6 sm:static sm:h-auto sm:bg-muted/40 sm:gap-4 sm:pt-3">
@@ -88,18 +93,20 @@ export default function Header() {
             className="overflow-hidden rounded-full"
           >
           <Avatar>
-            <AvatarImage src="/favicon.png" />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarImage src={session?.user?.image || '' } />
+            <AvatarFallback>
+              {session?.user?.name ? session.user.name.split(' ').map(part => part.charAt(0)).join('') : ''}
+            </AvatarFallback>
           </Avatar>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuLabel>{session?.user?.name || 'Usuário não identificado'}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Settings</DropdownMenuItem>
-          <DropdownMenuItem>Support</DropdownMenuItem>
+          <DropdownMenuItem><Link href="/settings">Configurações</Link></DropdownMenuItem>
+          <DropdownMenuItem>Suporte</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => signOut()}>Sair</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>

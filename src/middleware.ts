@@ -1,16 +1,24 @@
+// middleware.ts
+import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
-export default function middleware(request: NextRequest) {
-  const token = request.cookies.get("token")?.value;
+const secret = process.env.NEXTAUTH_SECRET;
 
-  const signInUrl = new URL("/login", request.url);
+export default async function middleware(req: NextRequest) {
+  const path = req.nextUrl.pathname;
 
-  if (!token) {
-    if (request.nextUrl.pathname === "/login") {
-      return NextResponse.next();
-    }
-    return NextResponse.redirect(signInUrl);
+  const session = await getToken({ req, secret });
+
+  const privateRoutes = ["/", "/manager", "/propose", "/products", "/expedition"];
+
+  if (privateRoutes.includes(path) && !session) {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
+  if (session && (path === "/login" || path === "/register")) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
@@ -19,7 +27,9 @@ export const config = {
     "/manager",
     "/manager/expedition",
     "/manager/propose",
-    "/customers",
-    "/settings"
+    "/products",
+    "/expedition",
+    "/login",
+    "/register"
   ],
 };

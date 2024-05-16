@@ -1,5 +1,4 @@
 // GroupedMultiSelect.tsx
-'use client'
 import React, { CSSProperties } from 'react';
 import Select from 'react-select';
 
@@ -74,6 +73,7 @@ const GroupedMultiSelect = ({ shipmentItems, value, onChange }) => {
       value={value}
       onChange={onChange}
       formatGroupLabel={formatGroupLabel}
+      styles={{ control: (base) => ({ ...base, maxWidth: '1010px' }) }} // Adicione esta linha
     />
   );
 };

@@ -36,27 +36,24 @@ export default function Settings() {
   return (
     <main className="flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 bg-muted/40 p-4 md:gap-8 md:p-10">
       <div className="grid w-full gap-2">
-        <h1 className="text-3xl font-semibold">Settings</h1>
+        <h1 className="text-3xl font-semibold">Configurações</h1>
       </div>
       <div className="grid w-full items-start gap-6 md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr]">
         <nav
           className="grid gap-4 text-sm text-muted-foreground" x-chunk="dashboard-04-chunk-0"
         >
           <Link href="#" className="font-semibold text-primary">
-            General
+            Perfil
           </Link>
-          <Link href="#">Security</Link>
-          <Link href="#">Integrations</Link>
-          <Link href="#">Support</Link>
-          <Link href="#">Organizations</Link>
-          <Link href="#">Advanced</Link>
+          <Link href="#">Aparência</Link>
+          <Link href="#">Configurações</Link>
         </nav>
         <div className="grid gap-6">
           <Card x-chunk="dashboard-04-chunk-1">
             <CardHeader>
-              <CardTitle>User Data</CardTitle>
+              <CardTitle>Dados do Usuário</CardTitle>
               <CardDescription>
-                Your personal information.
+                Suas informações pessoais
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -93,15 +90,14 @@ export default function Settings() {
               </form>
             </CardContent>
             <CardFooter className="border-t px-6 py-4">
-              <Button>Save</Button>
+              <Button>Salvar</Button>
             </CardFooter>
           </Card>
           <Card x-chunk="dashboard-04-chunk-2">
             <CardHeader>
               <CardTitle>Aparência</CardTitle>
               <CardDescription>
-                The directory within your project, in which your plugins are
-                located.
+                Personalize a aparência do sistema
               </CardDescription>
             </CardHeader>
             <CardContent>
