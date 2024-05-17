@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/context/DataProvider.jsx", "src/context/Providers.jsx", "src/context/ThemeProvider.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/context/DataProvider.jsx", "src/context/Providers.jsx", "src/context/ThemeProvider.jsx", "src/context/ExpeditionProvider.jsx"],
   "exclude": ["node_modules"]
 }

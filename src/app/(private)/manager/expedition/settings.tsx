@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useEffect, useState, useContext } from 'react';
 import { FileText, CheckCircle } from "lucide-react"
 import { DataContext } from '@/context/DataProvider';
-
+import { ExpeditionContext } from '@/context/ExpeditionProvider';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -40,36 +40,7 @@ export default function Settings() {
   const [documents, setDocuments] = useState([]);
   const [shipmentItems, setShipmentItems] = useState([]);
   const { documentData, setSelectedData, shipmentData, setShipmentData } = useContext(DataContext);
-
-  useEffect(() => {
-    axios.get('http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=99990')
-      .then(response => {
-        console.log(response.data);
-        setDocuments(response.data);
-      })
-      .catch(error => {
-        console.error('Erro ao buscar documentos:', error);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (selectedDocument !== '0' && selectedItem) {
-      axios.get(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocument}&item=${selectedItem}`)
-        .then(response => {
-          console.log(response.data);
-          setShipmentItems(response.data);
-        })
-        .catch(error => {
-          console.error('Erro ao buscar itens de embarque:', error);
-        });
-    }
-  }, [selectedDocument, selectedItem]);
-
-  useEffect(() => {
-    setShipmentData(shipmentData);
-    console.log("Dados enviados para DataContext: ", shipmentData);
-  }, [shipmentData, setShipmentData]);
-
+  
   function groupByFirstLevelProduct(data) {
     return data.reduce((groups, item) => {
       const group = (groups[item.codigoProdutoPrimeiroNivel] || []);
@@ -80,6 +51,28 @@ export default function Settings() {
   }
   
   const groupedData = groupByFirstLevelProduct(shipmentData);
+  const { saveData } = useContext(ExpeditionContext);
+  
+  useEffect(() => {
+    axios.get('http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=999')
+      .then(response => {
+        setDocuments(response.data);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (selectedDocument !== '0' && selectedItem) {
+      axios.get(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocument}&item=${selectedItem}`)
+        .then(response => {
+          setShipmentItems(response.data);
+        });
+    }
+  }, [selectedDocument, selectedItem]);
+
+  useEffect(() => {
+    setShipmentData(shipmentData);
+  }, [shipmentData, setShipmentData]);
+
 
   return (
     <div className="relative hidden flex-col items-start gap-8 md:flex">
@@ -91,7 +84,6 @@ export default function Settings() {
               value={documents.find(doc => doc.documento.toString() === selectedDocument && doc.item === selectedItem)}
               onChange={(selectedDocumentData) => {
                 if (selectedDocumentData) {
-                  console.log('Documento selecionado:', selectedDocumentData);
                   setSelectedDocument(selectedDocumentData?.documento?.toString());
                   setSelectedItem(selectedDocumentData?.item);
                   setSelectedData(prevData => ({ ...prevData, documentData: selectedDocumentData }));
@@ -104,9 +96,6 @@ export default function Settings() {
                         setSelectedData(prevData => ({ ...prevData, shipmentData: selectedData }));
                       }
                     })
-                    .catch(error => {
-                      console.error('Erro ao buscar itens de embarque:', error);
-                    });
                 }
               }}
               options={documents}
@@ -153,7 +142,7 @@ export default function Settings() {
                 <Table>
                   <thead>
                     <TableRow>
-                      <TableHead className="w-[100px]">Código</TableHead>
+                      <TableHead>Código</TableHead>
                       <TableHead>Produto</TableHead>
                       <TableHead>Qtd</TableHead>
                     </TableRow>
@@ -172,17 +161,17 @@ export default function Settings() {
                               <TableCell className="text-xs py-1">
                                 {item.codigoProduto}
                               </TableCell>
-                              <TableCell className="py-1">
+                              <TableCell className="py-1" >
                                 <Label htmlFor={`name-${index}`} className="sr-only">
                                   Produto
                                 </Label>
-                                <Input className="h-7 text-xs" id={`name-${index}`} type="button" defaultValue={item.descricaoProduto} />
+                                <Input className="h-7 text-xs min-w-[720px] max-w-[70px]" id={`name-${index}`} type="button" defaultValue={item.descricaoProduto} />
                               </TableCell>
-                              <TableCell className="py-1 w-20">
+                              <TableCell className="py-1">
                                 <Label htmlFor={`quantity-${index}`} className="sr-only">
                                   Qtd
                                 </Label>
-                                <Input className="h-7 text-xs" id={`quantity-${index}`} type="number" defaultValue={item.quantidade} max={item.quantidade} step="1" onKeyPress={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
+                                <Input className="h-7 text-xs max-w-[70px]" id={`quantity-${index}`} type="number" defaultValue={item.quantidade} max={item.quantidade} step="1" onKeyPress={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
                               </TableCell>
                             </TableRow>
                           );
@@ -194,10 +183,14 @@ export default function Settings() {
                 </Table>
               </CardContent>
               <CardFooter className="justify-center border-t p-1">
-                <Button size="sm" variant="ghost" className="gap-1">
-                  <CheckCircle className="h-3.5 w-3.5" />
-                    Save
-                </Button>
+              <Button size="sm" variant="ghost" className="gap-1" onClick={() => {
+                const dataToSave = { documentData, shipmentData };
+                saveData(dataToSave);
+                console.log("Dados salvos no contexto:", dataToSave);
+              }}>
+                <CheckCircle className="h-3.5 w-3.5" />
+                Save
+              </Button>
               </CardFooter>
             </Card>
           </div>
