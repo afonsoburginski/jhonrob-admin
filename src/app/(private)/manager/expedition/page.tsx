@@ -26,11 +26,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Expedition() {
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-  }
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
       <div className="flex flex-col sm:gap-4 sm:py-4">
