@@ -1,6 +1,6 @@
 // Romaneio.tsx
 'use client'
-import React,{ useContext, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import Image from 'next/image';
 import { DataContext } from '@/context/DataProvider';
 import {
@@ -19,9 +19,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from "@/components/ui/pagination"
 
 export default function Romaneio() {
   const { documentData, shipmentData } = useContext(DataContext);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+  const totalItems = shipmentData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
   const totalWeight = shipmentData?.reduce((total, item) => total + (item?.peso ? parseFloat(item.peso) : 0), 0);
   const totalQuantity = shipmentData?.reduce((total, item) => total + (item?.quantidade ? parseFloat(item.quantidade) : 0), 0);
   const totalBalance = shipmentData?.reduce((total, item) => total + (item?.quantidadeEnviada ? parseFloat(item.quantidadeEnviada) : 0), 0);
@@ -34,13 +46,27 @@ export default function Romaneio() {
       return result;
     }, {});
   }
-  
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const currentData = shipmentData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
-    <Card x-chunk="dashboard-06-chunk-1" className="w-[900px] max-h-[100vh] p-6">
+    <Card x-chunk="dashboard-06-chunk-1" className="w-[900px] min-h-[105vh] max-h-[105vh] p-6">
       <CardHeader className="border-t-2 border-gray-400 p-0 mb-1">
         <div className="flex justify-between items-center h-10">
           <div className='flex flex-col items-start'>
-            <Image src="/logo.png" alt="Logo" width="150" height="50" priority/>
+            <Image src="/logo.png" alt="Logo" width={150} height={50} priority />
           </div>
           <div className="flex flex-col items-center">
             <CardDescription className="font-bold">JHONROB</CardDescription>
@@ -48,7 +74,7 @@ export default function Romaneio() {
           </div>
           <div className="flex flex-col items-end">
             <CardDescription className="text-xs">CNPJ: 02.053.879/0001-65</CardDescription>
-            <CardDescription className="text-xs">Página 001 De 001</CardDescription>
+            <CardDescription className="text-xs">Página {currentPage} De {totalPages}</CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -90,9 +116,9 @@ export default function Romaneio() {
             <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-6">Local: Expedição</TableHead>
           </TableRow>
           <TableRow>
-            <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-1.5"/>
+            <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-1.5" />
           </TableRow>
-          {Object.entries(groupedShipmentData).map(([codigoProdutoPrimeiroNivel, group], groupIndex) => {
+          {Object.entries(groupBy(currentData, 'codigoProdutoPrimeiroNivel')).map(([codigoProdutoPrimeiroNivel, group], groupIndex) => {
             const descricaoProdutoPrimeiroNivel = group[0].descricaoProdutoPrimeiroNivel;
             return (
               <React.Fragment key={groupIndex}>
@@ -102,7 +128,7 @@ export default function Romaneio() {
                 {group.map((item, index) => (
                   <TableRow key={index}>
                     <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.quantidade ?? '-'}</TableCell>
-                    <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.quantidadeEnviada ?? '-'}</TableCell>
+                    <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.quantidade - (item?.quantidadeEnviada ?? 0)}</TableCell>
                     <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.codigoProduto ?? '-'}</TableCell>
                     <TableCell className="text-xs text-center py-1 px-1 border-r">{item?.revisaoDesenho ?? '-'}</TableCell>
                     <TableCell className="text-xs text-start py-1 px-1 border-r">{item?.descricaoProduto ?? '-'}</TableCell>
@@ -119,26 +145,25 @@ export default function Romaneio() {
         </TableBody>
       </Table>
       <CardContent className="flex justify-between items-center p-0 mt-2">
-        <div className="flex gap-1 w-24 px-2 justify-end">
-          <div className="flex flex-col items-end gap-4" style={{ flex: '0 0 40px' }}>
-            <CardDescription className="text-xs">{Math.round(totalQuantity)}</CardDescription>
-            <CardDescription className="text-xs">{Math.round(totalQuantity)}</CardDescription>
-          </div>
-          <div className="flex flex-col items-end gap-4" style={{ flex: '0 0 40px' }}>
-            <CardDescription className="text-xs">{Math.round(totalBalance)}</CardDescription>
-            <CardDescription className="text-xs">{Math.round(totalBalance)}</CardDescription>
-          </div>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex gap-5 mb-2 border-t px-1">
-            <CardDescription className="text-xs font-bold">Total:</CardDescription>
-            <CardDescription className="text-xs">{totalWeight.toFixed(2)}</CardDescription>
-          </div>
-          <div className="flex gap-5 border-t px-1">
-            <CardDescription className="text-xs font-bold">Total Geral:</CardDescription>
-            <CardDescription className="text-xs">{totalWeight.toFixed(2)}</CardDescription>
-          </div>
-        </div>
+        <CardDescription className="text-xs">
+          Página <strong>{currentPage}</strong> de <strong>{totalPages}</strong>
+        </CardDescription>
+        <Pagination className="ml-auto mr-0 w-auto">
+          <PaginationContent>
+            <PaginationItem>
+              <Button size="icon" variant="outline" className="h-6 w-6" onClick={handlePrevPage} disabled={currentPage === 1}>
+                <ChevronLeft className="h-3.5 w-3.5" />
+                <span className="sr-only">Página Anterior</span>
+              </Button>
+            </PaginationItem>
+            <PaginationItem>
+              <Button size="icon" variant="outline" className="h-6 w-6" onClick={handleNextPage} disabled={currentPage === totalPages}>
+                <ChevronRight className="h-3.5 w-3.5" />
+                <span className="sr-only">Próxima Página</span>
+              </Button>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </CardContent>
     </Card>
   );

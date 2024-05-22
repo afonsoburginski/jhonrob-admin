@@ -11,7 +11,13 @@ export const DataProvider = ({ children }) => {
   const documentData = useMemo(() => selectedData?.documentData ?? null, [selectedData]);
 
   return (
-    <DataContext.Provider value={{ documentData, setSelectedData, shipmentData, setShipmentData }}>
+    <DataContext.Provider 
+      value={{ 
+        documentData, 
+        setSelectedData, 
+        shipmentData, 
+        setShipmentData 
+      }}>
       {children}
     </DataContext.Provider>
   );

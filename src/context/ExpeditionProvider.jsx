@@ -1,3 +1,4 @@
+// ExpeditionProvider.tsx
 'use client'
 import React, { createContext, useState, useMemo } from 'react';
 
@@ -10,7 +11,11 @@ export const ExpeditionProvider = ({ children }) => {
     setExpeditionData(prevData => [...prevData, data]);
   };
 
-  const value = useMemo(() => ({ expeditionData, saveData }), [expeditionData]);
+  const removeData = (index) => {
+    setExpeditionData(prevData => prevData.filter((_, i) => i !== index));
+  };
+
+  const value = useMemo(() => ({ expeditionData, saveData, removeData }), [expeditionData]);
 
   return (
     <ExpeditionContext.Provider value={value}>

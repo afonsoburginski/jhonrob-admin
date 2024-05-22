@@ -1,6 +1,6 @@
 'use client'
 import axios from 'axios';
-import { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { FileText, CheckCircle } from "lucide-react"
 import { DataContext } from '@/context/DataProvider';
 import { ExpeditionContext } from '@/context/ExpeditionProvider';
@@ -8,14 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import GroupedMultiSelect from '@/components/GroupedMultiSelect';
+import DocumentSelect from '@/components/DocumentSelect';
 import Select from 'react-select';
-import {
-
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -32,7 +26,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import React from 'react';
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Settings() {
   const [selectedDocument, setSelectedDocument] = useState('0');
@@ -40,6 +34,8 @@ export default function Settings() {
   const [documents, setDocuments] = useState([]);
   const [shipmentItems, setShipmentItems] = useState([]);
   const { documentData, setSelectedData, shipmentData, setShipmentData } = useContext(DataContext);
+  const { saveData } = useContext(ExpeditionContext);
+  const { toast } = useToast();
   
   function groupByFirstLevelProduct(data) {
     return data.reduce((groups, item) => {
@@ -51,7 +47,6 @@ export default function Settings() {
   }
   
   const groupedData = groupByFirstLevelProduct(shipmentData);
-  const { saveData } = useContext(ExpeditionContext);
   
   useEffect(() => {
     axios.get('http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=999')
@@ -73,7 +68,6 @@ export default function Settings() {
     setShipmentData(shipmentData);
   }, [shipmentData, setShipmentData]);
 
-
   return (
     <div className="relative hidden flex-col items-start gap-8 md:flex">
       <form className="grid w-full items-start gap-6">
@@ -81,6 +75,7 @@ export default function Settings() {
           <legend className="-ml-1 px-1 text-sm font-medium">Ordens de produção</legend>
           <div className="grid gap-3">
             <Select
+            
               value={documents.find(doc => doc.documento.toString() === selectedDocument && doc.item === selectedItem)}
               onChange={(selectedDocumentData) => {
                 if (selectedDocumentData) {
@@ -91,11 +86,12 @@ export default function Settings() {
                     .then(response => {
                       setShipmentItems(response.data);
                       if (response.data.length >= 5) {
-                        const selectedData = response.data.slice(0, 50);
+                        const selectedData = response.data.slice(0, 1000);
                         setShipmentData(selectedData);
                         setSelectedData(prevData => ({ ...prevData, shipmentData: selectedData }));
                       }
-                    })
+                    }
+                  )
                 }
               }}
               options={documents}
@@ -104,7 +100,7 @@ export default function Settings() {
               placeholder="Selecione o documento"
             />
           </div>
-          <div className="grid gap-3 max-w-[1118px]">
+          <div className="grid gap-3 max-w-[795px]">
             <Label htmlFor="product">Itens de Embarque</Label>
             <GroupedMultiSelect 
               shipmentItems={shipmentItems}
@@ -133,64 +129,96 @@ export default function Settings() {
                     <CardDescription><b>Dt.Emissão:</b> {new Date(documentData?.dataCadastro).toLocaleDateString()}</CardDescription>
                     <CardDescription><b>Dt.Entrega</b> {new Date(documentData?.dataPrevEntrega).toLocaleDateString()}</CardDescription>
                   </div>
-                  <div className="flex flex-col w-1/12">
+                  <div className="flex flex-col w-1/6">
                     <CardDescription><b>Tag:</b> {documentData?.tag}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="overflow-auto max-h-[32vh] min-h-[32vh]">
-                <Table>
-                  <thead>
-                    <TableRow>
-                      <TableHead>Código</TableHead>
-                      <TableHead>Produto</TableHead>
-                      <TableHead>Qtd</TableHead>
-                    </TableRow>
-                  </thead>
-                  <tbody>
-                  {Object.entries(groupedData).map(([codigoProdutoPrimeiroNivel, group], groupIndex) => {
-                    const descricaoProdutoPrimeiroNivel = group[0].descricaoProdutoPrimeiroNivel;
-                    return (
-                      <React.Fragment key={groupIndex}>
-                        <TableRow className="bg-gray-200">
-                          <TableHead colSpan={10} className="w-full text-start text-xs font-bold h-6">({codigoProdutoPrimeiroNivel}) {descricaoProdutoPrimeiroNivel}</TableHead>
-                        </TableRow>
-                        {group.map((item, index) => {
-                          return (
-                            <TableRow key={index}>
-                              <TableCell className="text-xs py-1">
-                                {item.codigoProduto}
+              <CardContent className="overflow-auto max-h-[47vh] min-h-[47vh]">
+              <Table className="w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Código</TableHead>
+                    <TableHead>Produto</TableHead>
+                    <TableHead>Qtd</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="border">
+                {Object.entries(groupedData).map(([codigoProdutoPrimeiroNivel, group], groupIndex) => {
+                  const descricaoProdutoPrimeiroNivel = group[0].descricaoProdutoPrimeiroNivel;
+                  return (
+                    <React.Fragment key={groupIndex}>
+                      <TableRow className="bg-gray-200">
+                        <TableHead colSpan={3} className="text-start text-xs font-bold h-6">
+                          <div className="w-[37rem] truncate">
+                            ({codigoProdutoPrimeiroNivel}) {descricaoProdutoPrimeiroNivel}
+                          </div>
+                        </TableHead>
+                      </TableRow>
+                      {group.map((item, index) => {
+                        return (
+                          <TableRow key={index}>
+                            <TableCell className="text-xs py-1 w-1/5">{item.codigoProduto}</TableCell>
+                            <TableCell className="text-xs py-1 w-96" >{item.descricaoProduto}</TableCell>
+                              <TableCell className="text-xs py-1 w-1/5">
+                                <Input
+                                  className="h-6 text-xs"
+                                  id={`quantity-${index}`}
+                                  type="number"
+                                  value={item.quantidadeEnviada !== null ? item.quantidadeEnviada : 0}
+                                  max={item.quantidade}
+                                  step="1"
+                                  onKeyPress={(e) => {
+                                    if (e.key === 'Enter') e.preventDefault();
+                                  }}
+                                  onChange={(e) => {
+                                    let newQuantity = parseInt(e.target.value);
+                                    if (newQuantity > item.quantidade) {
+                                      newQuantity = item.quantidade;
+                                    }
+                                    if (newQuantity < 0) {
+                                      newQuantity = 0;
+                                    }
+                                    const updatedShipmentData = shipmentData.map((shipmentItem) => {
+                                      if (shipmentItem.codigoProduto === item.codigoProduto) {
+                                        return { ...shipmentItem, quantidadeEnviada: newQuantity };
+                                      }
+                                      return shipmentItem;
+                                    });
+                                    setShipmentData(updatedShipmentData);
+                                    setSelectedData((prevData) => ({
+                                      ...prevData,
+                                      shipmentData: updatedShipmentData,
+                                    }));
+                                  }}
+                                />
                               </TableCell>
-                              <TableCell className="py-1" >
-                                <Label htmlFor={`name-${index}`} className="sr-only">
-                                  Produto
-                                </Label>
-                                <Input className="h-7 text-xs min-w-[720px] max-w-[70px]" id={`name-${index}`} type="button" defaultValue={item.descricaoProduto} />
-                              </TableCell>
-                              <TableCell className="py-1">
-                                <Label htmlFor={`quantity-${index}`} className="sr-only">
-                                  Qtd
-                                </Label>
-                                <Input className="h-7 text-xs max-w-[70px]" id={`quantity-${index}`} type="number" defaultValue={item.quantidade} max={item.quantidade} step="1" onKeyPress={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </React.Fragment>
-                    );
-                    })}
-                  </tbody>
-                </Table>
+                          </TableRow>
+                        );
+                      })}
+                    </React.Fragment>
+                  );
+                  })}
+                </TableBody>
+              </Table>
               </CardContent>
               <CardFooter className="justify-center border-t p-1">
-              <Button size="sm" variant="ghost" className="gap-1" onClick={() => {
-                const dataToSave = { documentData, shipmentData };
-                saveData(dataToSave);
-                console.log("Dados salvos no contexto:", dataToSave);
-              }}>
-                <CheckCircle className="h-3.5 w-3.5" />
-                Save
-              </Button>
+                <Button size="sm" variant="ghost" className="gap-1" onClick={(event) => {
+                  event.preventDefault();
+                  const dataToSave = { documentData, shipmentData };
+                  saveData(dataToSave);
+                  const { documento, item, produto } = documentData;
+                  const savedProducts = shipmentData.map(product => product.descricaoProduto).join(', ');
+                  toast({
+                    title: "Dados enviados para Expedição",
+                    description: `Documento: ${documento}, Item: ${item}, Produto: ${produto?.codigo} - ${produto?.descricao}`,
+                    duration: 3000,
+                    icon: <CheckCircle className="h-4 w-4" />
+                  });
+                }}>
+                  <FileText className="h-4 w-4" />
+                  Salvar
+                </Button>
               </CardFooter>
             </Card>
           </div>

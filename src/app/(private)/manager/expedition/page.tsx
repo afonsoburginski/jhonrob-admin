@@ -1,5 +1,5 @@
 'use client'
-import React, {useState} from 'react';
+import React, { useState, useContext } from 'react';
 import { ExpeditionTable } from './ExpeditionTable';
 import Settings from './settings';
 import Romaneio from './Romaneio';
@@ -24,8 +24,27 @@ import {
 } from "@/components/ui/pagination"
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ExpeditionContext } from '@/context/ExpeditionProvider';
 
 export default function Expedition() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+  const { expeditionData } = useContext(ExpeditionContext);
+  const totalItems = expeditionData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
       <div className="flex flex-col sm:gap-4 sm:py-4">
@@ -48,12 +67,6 @@ export default function Expedition() {
                 <CardContent className="overflow-x-auto">
                   <Settings />
                 </CardContent>
-                <CardFooter>
-                  <div className="text-xs text-muted-foreground">
-                    Mostrando <strong>1-10</strong> de <strong>32</strong>{" "}
-                    OFs
-                  </div>
-                </CardFooter>
               </Card>
               <Romaneio/>
             </TabsContent>
@@ -61,35 +74,39 @@ export default function Expedition() {
               <Card x-chunk="dashboard-06-chunk-1">
                 <CardHeader>
                   <CardTitle>Expedição</CardTitle>
-                  <CardDescription>
-                    Lista de itens enviados para expedição
-                  </CardDescription>
+                  <div className="flex justify-between items-center">
+                    <CardDescription>
+                      Lista de itens enviados para expedição
+                    </CardDescription>
+                    <Button size="default" variant="outline" className="h-6">
+                      Enviar
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
-                  <ExpeditionTable />
+                  <ExpeditionTable currentPage={currentPage} itemsPerPage={itemsPerPage} />
                 </CardContent>
                 <CardFooter className="flex flex-row items-center border-t bg-muted/50 px-6 py-3">
                   <div className="text-xs text-muted-foreground">
-                    Mostrando <strong>1-10</strong> de <strong>32</strong>{" "}
-                    itens
+                    Mostrando <strong>{(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, totalItems)}</strong> de <strong>{totalItems}</strong> itens
                   </div>
-                <Pagination className="ml-auto mr-0 w-auto">
-                  <PaginationContent>
-                    <PaginationItem>
-                      <Button size="icon" variant="outline" className="h-6 w-6">
-                        <ChevronLeft className="h-3.5 w-3.5" />
-                        <span className="sr-only">Previous Order</span>
-                      </Button>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <Button size="icon" variant="outline" className="h-6 w-6">
-                        <ChevronRight className="h-3.5 w-3.5" />
-                        <span className="sr-only">Next Order</span>
-                      </Button>
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </CardFooter>
+                  <Pagination className="ml-auto mr-0 w-auto">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <Button size="icon" variant="outline" className="h-6 w-6" onClick={handlePrevPage} disabled={currentPage === 1}>
+                          <ChevronLeft className="h-3.5 w-3.5" />
+                          <span className="sr-only">Página Anterior</span>
+                        </Button>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <Button size="icon" variant="outline" className="h-6 w-6" onClick={handleNextPage} disabled={currentPage === totalPages}>
+                          <ChevronRight className="h-3.5 w-3.5" />
+                          <span className="sr-only">Próxima Página</span>
+                        </Button>
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </CardFooter>
               </Card>
             </TabsContent>
           </Tabs>

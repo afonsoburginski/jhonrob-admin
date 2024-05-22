@@ -1,5 +1,5 @@
-// GroupedMultiSelect.tsx
-import React, { CSSProperties } from 'react';
+// DocumentSelect.tsx
+import React from 'react';
 import Select from 'react-select';
 
 const groupStyles = {
@@ -8,7 +8,7 @@ const groupStyles = {
   justifyContent: 'space-between',
 };
 
-const groupBadgeStyles: CSSProperties = {
+const groupBadgeStyles = {
   backgroundColor: '#EBECF0',
   borderRadius: '2em',
   color: '#172B4D',
@@ -21,45 +21,27 @@ const groupBadgeStyles: CSSProperties = {
   textAlign: 'center',
 };
 
-const localStyles: CSSProperties = {
-  marginLeft: 'auto',
-  backgroundColor: '#EBECF0',
-  borderRadius: '2em',
-  padding: '0.1em 0.3em',
-  fontSize: 12,
-};
-
 const formatGroupLabel = (data) => (
   <div style={groupStyles}>
-    <span>Item: {data.label}</span>
+    <span>{data.label}</span>
     <span style={groupBadgeStyles}>{data.options.length}</span>
   </div>
 );
 
-const GroupedMultiSelect = ({ shipmentItems, value, onChange }) => {
-  const groupedOptions = shipmentItems.reduce((groups, item) => {
-    const group = groups.find(group => group.label === item.item);
+const DocumentSelect = ({ documents, value, onChange }) => {
+  const groupedOptions = documents.reduce((groups, item) => {
+    const group = groups.find(group => group.label === item.documento);
     if (group) {
       group.options.push({ 
-        value: item.codigoProduto, 
-        label: (
-          <div style={{ display: 'flex' }}>
-            <span>{`${item.codigoProduto} - ${item.descricaoProduto}`}</span>
-            <span style={localStyles}>{item.local}</span>
-          </div>
-        )
+        value: `${item.documento}-${item.item}`, 
+        label: `Item: ${item.item} (${item.produto?.codigo}) ${item.produto?.descricao}`
       });
     } else {
       groups.push({ 
-        label: item.item, 
+        label: item.documento, 
         options: [{ 
-          value: item.codigoProduto, 
-          label: (
-            <div style={{ display: 'flex' }}>
-              <span>{`${item.codigoProduto} - ${item.descricaoProduto}`}</span>
-              <span style={localStyles}>{item.local}</span>
-            </div>
-          )
+          value: `${item.documento}-${item.item}`, 
+          label: `Item: ${item.item} (${item.produto?.codigo}) ${item.produto?.descricao}`
         }] 
       });
     }
@@ -68,7 +50,6 @@ const GroupedMultiSelect = ({ shipmentItems, value, onChange }) => {
 
   return (
     <Select
-      isMulti
       options={groupedOptions}
       value={value}
       onChange={onChange}
@@ -86,4 +67,4 @@ const GroupedMultiSelect = ({ shipmentItems, value, onChange }) => {
   );
 };
 
-export default GroupedMultiSelect;
+export default DocumentSelect;

@@ -24,9 +24,12 @@ export default function LoginForm() {
   const { toast } = useToast();
 
   const handleSubmit = async (event: React.FormEvent) => {
+    console.log("handleSubmit foi chamada");
     event.preventDefault();
   
     try {
+      console.log(`Fazendo login com usuário: ${login} e senha: ${senha}`);
+
       const response = await signIn('credentials', { 
         redirect: false, 
         login, 
