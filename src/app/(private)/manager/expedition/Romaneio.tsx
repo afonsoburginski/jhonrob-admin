@@ -145,6 +145,28 @@ export default function Romaneio() {
         </TableBody>
       </Table>
       <CardContent className="flex justify-between items-center p-0 mt-2">
+        <div className="flex gap-1 w-24 px-2 justify-end">
+          <div className="flex flex-col items-end gap-4" style={{ flex: '0 0 40px' }}>
+            <CardDescription className="text-xs">{Math.round(totalQuantity)}</CardDescription>
+            <CardDescription className="text-xs">{Math.round(totalQuantity)}</CardDescription>
+          </div>
+          <div className="flex flex-col items-end gap-4" style={{ flex: '0 0 40px' }}>
+            <CardDescription className="text-xs">{Math.round(totalBalance)}</CardDescription>
+            <CardDescription className="text-xs">{Math.round(totalBalance)}</CardDescription>
+          </div>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex gap-5 mb-2 border-t px-1">
+            <CardDescription className="text-xs font-bold">Total:</CardDescription>
+            <CardDescription className="text-xs">{totalWeight.toFixed(2)}</CardDescription>
+          </div>
+          <div className="flex gap-5 border-t px-1">
+            <CardDescription className="text-xs font-bold">Total Geral:</CardDescription>
+            <CardDescription className="text-xs">{totalWeight.toFixed(2)}</CardDescription>
+          </div>
+        </div>
+      </CardContent>
+      <CardContent className="flex justify-items-start items-center p-0 mt-2">
         <CardDescription className="text-xs">
           Página <strong>{currentPage}</strong> de <strong>{totalPages}</strong>
         </CardDescription>

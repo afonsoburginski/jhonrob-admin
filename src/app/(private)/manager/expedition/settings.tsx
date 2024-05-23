@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import GroupedMultiSelect from '@/components/GroupedMultiSelect';
 import DocumentSelect from '@/components/DocumentSelect';
-import Select from 'react-select';
 import {
   Table,
   TableBody,
@@ -29,14 +28,13 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 
 export default function Settings() {
-  const [selectedDocument, setSelectedDocument] = useState('0');
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedDocument, setSelectedDocument] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [shipmentItems, setShipmentItems] = useState([]);
   const { documentData, setSelectedData, shipmentData, setShipmentData } = useContext(DataContext);
   const { saveData } = useContext(ExpeditionContext);
   const { toast } = useToast();
-  
+
   function groupByFirstLevelProduct(data) {
     return data.reduce((groups, item) => {
       const group = (groups[item.codigoProdutoPrimeiroNivel] || []);
@@ -45,9 +43,9 @@ export default function Settings() {
       return groups;
     }, {});
   }
-  
+
   const groupedData = groupByFirstLevelProduct(shipmentData);
-  
+
   useEffect(() => {
     axios.get('http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=999')
       .then(response => {
@@ -56,17 +54,19 @@ export default function Settings() {
   }, []);
 
   useEffect(() => {
-    if (selectedDocument !== '0' && selectedItem) {
-      axios.get(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocument}&item=${selectedItem}`)
+    if (selectedDocument) {
+      axios.get(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocument.documento}&item=${selectedDocument.item}`)
         .then(response => {
           setShipmentItems(response.data);
         });
     }
-  }, [selectedDocument, selectedItem]);
+  }, [selectedDocument]);
 
   useEffect(() => {
     setShipmentData(shipmentData);
   }, [shipmentData, setShipmentData]);
+
+  const [errorMessages, setErrorMessages] = useState({});
 
   return (
     <div className="relative hidden flex-col items-start gap-8 md:flex">
@@ -74,15 +74,14 @@ export default function Settings() {
         <fieldset className="grid gap-6 rounded-lg border p-4">
           <legend className="-ml-1 px-1 text-sm font-medium">Ordens de produção</legend>
           <div className="grid gap-3">
-            <Select
-            
-              value={documents.find(doc => doc.documento.toString() === selectedDocument && doc.item === selectedItem)}
+            <DocumentSelect
+              documents={documents}
+              value={selectedDocument}
               onChange={(selectedDocumentData) => {
                 if (selectedDocumentData) {
-                  setSelectedDocument(selectedDocumentData?.documento?.toString());
-                  setSelectedItem(selectedDocumentData?.item);
+                  setSelectedDocument(selectedDocumentData);
                   setSelectedData(prevData => ({ ...prevData, documentData: selectedDocumentData }));
-                  axios.get(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocumentData?.documento?.toString()}&item=${selectedDocumentData?.item}&produto=${selectedDocumentData?.produto?.codigo}`)
+                  axios.get(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocumentData.documento}&item=${selectedDocumentData.item}&produto=${selectedDocumentData.produto?.codigo}`)
                     .then(response => {
                       setShipmentItems(response.data);
                       if (response.data.length >= 5) {
@@ -90,19 +89,15 @@ export default function Settings() {
                         setShipmentData(selectedData);
                         setSelectedData(prevData => ({ ...prevData, shipmentData: selectedData }));
                       }
-                    }
-                  )
+                    });
                 }
               }}
-              options={documents}
-              getOptionLabel={(option) => `OF ${option.documento} Item: ${option.item} (${option.produto?.codigo}) ${option.produto?.descricao}`}
-              getOptionValue={(option) => `${option.documento.toString()}-${option.item}-${option.produto?.codigo}`}
               placeholder="Selecione o documento"
             />
           </div>
           <div className="grid gap-3 max-w-[795px]">
             <Label htmlFor="product">Itens de Embarque</Label>
-            <GroupedMultiSelect 
+            <GroupedMultiSelect
               shipmentItems={shipmentItems}
               value={Array.isArray(shipmentData) ? shipmentData.map(data => ({ value: data.codigoProduto, label: data.codigoProduto })) : []}
               onChange={selectedOptions => {
@@ -161,37 +156,46 @@ export default function Settings() {
                             <TableCell className="text-xs py-1 w-1/5">{item.codigoProduto}</TableCell>
                             <TableCell className="text-xs py-1 w-96" >{item.descricaoProduto}</TableCell>
                               <TableCell className="text-xs py-1 w-1/5">
-                                <Input
-                                  className="h-6 text-xs"
-                                  id={`quantity-${index}`}
-                                  type="number"
-                                  value={item.quantidadeEnviada !== null ? item.quantidadeEnviada : 0}
-                                  max={item.quantidade}
-                                  step="1"
-                                  onKeyPress={(e) => {
-                                    if (e.key === 'Enter') e.preventDefault();
-                                  }}
-                                  onChange={(e) => {
-                                    let newQuantity = parseInt(e.target.value);
-                                    if (newQuantity > item.quantidade) {
-                                      newQuantity = item.quantidade;
-                                    }
-                                    if (newQuantity < 0) {
-                                      newQuantity = 0;
-                                    }
-                                    const updatedShipmentData = shipmentData.map((shipmentItem) => {
-                                      if (shipmentItem.codigoProduto === item.codigoProduto) {
-                                        return { ...shipmentItem, quantidadeEnviada: newQuantity };
-                                      }
-                                      return shipmentItem;
+                              <Input
+                                className="h-6 text-xs"
+                                id={`quantity-${item.codigoProduto}`}
+                                type="number"
+                                value={item.quantidadeEnviada !== null ? item.quantidadeEnviada : 0}
+                                max={item.quantidade}
+                                step="1"
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') e.preventDefault();
+                                }}
+                                onChange={(e) => {
+                                  let newQuantity = parseInt(e.target.value);
+                                  if (newQuantity > item.quantidade) {
+                                    // Defina a mensagem de erro quando o valor inserido for muito alto
+                                    setErrorMessages(prev => ({ ...prev, [item.codigoProduto]: 'Valor excedido' }));
+                                    newQuantity = item.quantidade;
+                                  } else {
+                                    // Limpe a mensagem de erro quando o valor inserido for válido
+                                    setErrorMessages(prev => {
+                                      const { [item.codigoProduto]: _, ...rest } = prev;
+                                      return rest;
                                     });
-                                    setShipmentData(updatedShipmentData);
-                                    setSelectedData((prevData) => ({
-                                      ...prevData,
-                                      shipmentData: updatedShipmentData,
-                                    }));
-                                  }}
-                                />
+                                  }
+                                  if (newQuantity < 0) {
+                                    newQuantity = 0;
+                                  }
+                                  const updatedShipmentData = shipmentData.map((shipmentItem) => {
+                                    if (shipmentItem.codigoProduto === item.codigoProduto) {
+                                      return { ...shipmentItem, quantidadeEnviada: newQuantity };
+                                    }
+                                    return shipmentItem;
+                                  });
+                                  setShipmentData(updatedShipmentData);
+                                  setSelectedData((prevData) => ({
+                                    ...prevData,
+                                    shipmentData: updatedShipmentData,
+                                  }));
+                                }}
+                              />
+                              {errorMessages[item.codigoProduto] && <span className="text-red-500">{errorMessages[item.codigoProduto]}</span>}
                               </TableCell>
                           </TableRow>
                         );

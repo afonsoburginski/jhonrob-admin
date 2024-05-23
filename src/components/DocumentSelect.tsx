@@ -1,4 +1,3 @@
-// DocumentSelect.tsx
 import React from 'react';
 import Select from 'react-select';
 
@@ -32,17 +31,19 @@ const DocumentSelect = ({ documents, value, onChange }) => {
   const groupedOptions = documents.reduce((groups, item) => {
     const group = groups.find(group => group.label === item.documento);
     if (group) {
-      group.options.push({ 
-        value: `${item.documento}-${item.item}`, 
-        label: `Item: ${item.item} (${item.produto?.codigo}) ${item.produto?.descricao}`
+      group.options.push({
+        ...item,
+        value: `${item.documento}-${item.item}`,
+        label: `Item: ${item.item} (${item.produto?.codigo}) ${item.produto?.descricao}`,
       });
     } else {
-      groups.push({ 
-        label: item.documento, 
-        options: [{ 
-          value: `${item.documento}-${item.item}`, 
-          label: `Item: ${item.item} (${item.produto?.codigo}) ${item.produto?.descricao}`
-        }] 
+      groups.push({
+        label: item.documento,
+        options: [{
+          ...item,
+          value: `${item.documento}-${item.item}`,
+          label: `Item: ${item.item} (${item.produto?.codigo}) ${item.produto?.descricao}`,
+        }]
       });
     }
     return groups;
@@ -51,16 +52,18 @@ const DocumentSelect = ({ documents, value, onChange }) => {
   return (
     <Select
       options={groupedOptions}
-      value={value}
+      value={groupedOptions
+        .flatMap(group => group.options)
+        .find(option => option.value === value?.value)}
       onChange={onChange}
       formatGroupLabel={formatGroupLabel}
-      styles={{ 
+      styles={{
         control: (base) => ({ ...base, maxWidth: '1010px' }),
         valueContainer: (base) => ({
           ...base,
           height: 'auto',
-          maxHeight: '65px', // Limita a altura máxima para o equivalente a duas linhas
-          overflowY: 'auto', // Adiciona uma barra de rolagem vertical se necessário
+          maxHeight: '65px',
+          overflowY: 'auto',
         }),
       }}
     />
