@@ -36,7 +36,7 @@ const formatGroupLabel = (data) => (
   </div>
 );
 
-const GroupedMultiSelect = ({ shipmentItems, value, onChange }) => {
+const GroupedMultiSelect = ({ shipmentItems, value, onChange, placeholder }) => {
   const groupedOptions = shipmentItems.reduce((groups, item) => {
     const group = groups.find(group => group.label === item.item);
     if (group) {
@@ -73,12 +73,13 @@ const GroupedMultiSelect = ({ shipmentItems, value, onChange }) => {
       value={value}
       onChange={onChange}
       formatGroupLabel={formatGroupLabel}
+      placeholder={placeholder}
       styles={{ 
         control: (base) => ({ ...base, maxWidth: '1010px' }),
         valueContainer: (base) => ({
           ...base,
           height: 'auto',
-          maxHeight: '65px', // Limita a altura máxima para o equivalente a duas linhas
+          maxHeight: '68px', // Limita a altura máxima para o equivalente a duas linhas
           overflowY: 'auto', // Adiciona uma barra de rolagem vertical se necessário
         }),
       }}

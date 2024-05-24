@@ -1,6 +1,6 @@
 'use client'
 import axios from 'axios';
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useMemo } from 'react';
 import { FileText, CheckCircle } from "lucide-react"
 import { DataContext } from '@/context/DataProvider';
 import { ExpeditionContext } from '@/context/ExpeditionProvider';
@@ -28,12 +28,12 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 
 export default function Settings() {
-  const [selectedDocument, setSelectedDocument] = useState(null);
-  const [documents, setDocuments] = useState([]);
-  const [shipmentItems, setShipmentItems] = useState([]);
-  const { documentData, setSelectedData, shipmentData, setShipmentData } = useContext(DataContext);
+  const { documentData, setSelectedData, shipmentData, setShipmentData, selectedDocument, setSelectedDocument } = useContext(DataContext); // Atualizado
   const { saveData } = useContext(ExpeditionContext);
   const { toast } = useToast();
+  const [documents, setDocuments] = useState([]);
+  const [shipmentItems, setShipmentItems] = useState([]);
+  const [errorMessages, setErrorMessages] = useState({});
 
   function groupByFirstLevelProduct(data) {
     return data.reduce((groups, item) => {
@@ -44,10 +44,10 @@ export default function Settings() {
     }, {});
   }
 
-  const groupedData = groupByFirstLevelProduct(shipmentData);
+  const groupedData = useMemo(() => groupByFirstLevelProduct(shipmentData), [shipmentData]);
 
   useEffect(() => {
-    axios.get('http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=999')
+    axios.get('http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=100')
       .then(response => {
         setDocuments(response.data);
       });
@@ -66,8 +66,6 @@ export default function Settings() {
     setShipmentData(shipmentData);
   }, [shipmentData, setShipmentData]);
 
-  const [errorMessages, setErrorMessages] = useState({});
-
   return (
     <div className="relative hidden flex-col items-start gap-8 md:flex">
       <form className="grid w-full items-start gap-6">
@@ -76,6 +74,7 @@ export default function Settings() {
           <div className="grid gap-3">
             <DocumentSelect
               documents={documents}
+              placeholder="Selecione o documento"
               value={selectedDocument}
               onChange={(selectedDocumentData) => {
                 if (selectedDocumentData) {
@@ -92,13 +91,13 @@ export default function Settings() {
                     });
                 }
               }}
-              placeholder="Selecione o documento"
             />
           </div>
           <div className="grid gap-3 max-w-[795px]">
             <Label htmlFor="product">Itens de Embarque</Label>
             <GroupedMultiSelect
               shipmentItems={shipmentItems}
+              placeholder="Selecione os Items"
               value={Array.isArray(shipmentData) ? shipmentData.map(data => ({ value: data.codigoProduto, label: data.codigoProduto })) : []}
               onChange={selectedOptions => {
                 const selectedCodes = selectedOptions.map(option => option.value);

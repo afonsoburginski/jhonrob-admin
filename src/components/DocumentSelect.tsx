@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Select from 'react-select';
 
 const groupStyles = {
@@ -27,8 +27,8 @@ const formatGroupLabel = (data) => (
   </div>
 );
 
-const DocumentSelect = ({ documents, value, onChange }) => {
-  const groupedOptions = documents.reduce((groups, item) => {
+const DocumentSelect = ({ documents, value, onChange, placeholder }) => {
+  const groupedOptions = useMemo(() => documents.reduce((groups, item) => {
     const group = groups.find(group => group.label === item.documento);
     if (group) {
       group.options.push({
@@ -47,16 +47,21 @@ const DocumentSelect = ({ documents, value, onChange }) => {
       });
     }
     return groups;
-  }, []);
+  }, []), [documents]);
+
+  const selectedOption = useMemo(() => {
+    return groupedOptions
+      .flatMap(group => group.options)
+      .find(option => option.value === value?.value);
+  }, [groupedOptions, value]);
 
   return (
     <Select
       options={groupedOptions}
-      value={groupedOptions
-        .flatMap(group => group.options)
-        .find(option => option.value === value?.value)}
+      value={selectedOption}
       onChange={onChange}
       formatGroupLabel={formatGroupLabel}
+      placeholder={placeholder}
       styles={{
         control: (base) => ({ ...base, maxWidth: '1010px' }),
         valueContainer: (base) => ({
