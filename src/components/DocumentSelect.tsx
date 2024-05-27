@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import Select, { GroupBase, OptionProps } from 'react-select';
+import Select, { GroupBase } from 'react-select';
+import { CSSProperties } from 'react';
 
 interface DocumentOption {
   documento: string;
@@ -17,13 +18,13 @@ interface DocumentSelectProps {
   placeholder: string;
 }
 
-const groupStyles = {
+const groupStyles: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
 };
 
-const groupBadgeStyles = {
+const groupBadgeStyles: CSSProperties = {
   backgroundColor: '#EBECF0',
   borderRadius: '2em',
   color: '#172B4D',
@@ -33,7 +34,7 @@ const groupBadgeStyles = {
   lineHeight: '1',
   minWidth: 1,
   padding: '0.16666666666667em 0.5em',
-  textAlign: 'center',
+  textAlign: 'center' as const,
 };
 
 const formatGroupLabel = (data: GroupBase<DocumentOption>) => (
