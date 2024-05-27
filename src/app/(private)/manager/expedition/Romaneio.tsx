@@ -27,6 +27,16 @@ import {
   PaginationItem,
 } from "@/components/ui/pagination"
 
+// Definindo a estrutura esperada de cada item em shipmentData
+interface ShipmentData {
+  peso?: string;
+  quantidade?: string;
+  quantidadeEnviada?: string;
+  codigoProdutoPrimeiroNivel?: string;
+  descricaoProdutoPrimeiroNivel?: string;
+  [key: string]: any;
+}
+
 export default function Romaneio() {
   const { documentData, shipmentData } = useContext(DataContext);
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,14 +44,14 @@ export default function Romaneio() {
   const totalItems = shipmentData.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-  const totalWeight = shipmentData?.reduce((total, item) => total + (item?.peso ? parseFloat(item.peso) : 0), 0);
-  const totalQuantity = shipmentData?.reduce((total, item) => total + (item?.quantidade ? parseFloat(item.quantidade) : 0), 0);
-  const totalBalance = shipmentData?.reduce((total, item) => total + (item?.quantidadeEnviada ? parseFloat(item.quantidadeEnviada) : 0), 0);
+  const totalWeight = shipmentData?.reduce((total: number, item: ShipmentData) => total + (item?.peso ? parseFloat(item.peso) : 0), 0);
+  const totalQuantity = shipmentData?.reduce((total: number, item: ShipmentData) => total + (item?.quantidade ? parseFloat(item.quantidade) : 0), 0);
+  const totalBalance = shipmentData?.reduce((total: number, item: ShipmentData) => total + (item?.quantidadeEnviada ? parseFloat(item.quantidadeEnviada) : 0), 0);
 
   const groupedShipmentData = groupBy(shipmentData, 'codigoProdutoPrimeiroNivel');
 
-  function groupBy(array, key) {
-    return array.reduce((result, currentValue) => {
+  function groupBy(array: ShipmentData[], key: string) {
+    return array.reduce((result: { [key: string]: ShipmentData[] }, currentValue: ShipmentData) => {
       (result[currentValue[key]] = result[currentValue[key]] || []).push(currentValue);
       return result;
     }, {});
