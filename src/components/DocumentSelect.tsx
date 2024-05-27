@@ -45,26 +45,25 @@ const formatGroupLabel = (data: GroupBase<DocumentOption>) => (
 );
 
 const DocumentSelect: React.FC<DocumentSelectProps> = ({ documents, value, onChange, placeholder }) => {
-  const groupedOptions = useMemo(() => documents.reduce((groups, item) => {
-    const group = groups.find(group => group.label === item.documento);
-    if (group) {
-      group.options.push({
+  const groupedOptions = useMemo(() => {
+    return documents.reduce((groups, item) => {
+      const group = groups.find(group => group.label === item.documento);
+      const option = {
         ...item,
         value: `${item.documento}-${item.item}`,
         label: `Item: ${item.item} (${item.produto?.codigo}) ${item.produto?.descricao}`,
-      });
-    } else {
-      groups.push({
-        label: item.documento,
-        options: [{
-          ...item,
-          value: `${item.documento}-${item.item}`,
-          label: `Item: ${item.item} (${item.produto?.codigo}) ${item.produto?.descricao}`,
-        }]
-      });
-    }
-    return groups;
-  }, [] as GroupBase<DocumentOption>[]), [documents]);
+      };
+      if (group) {
+        group.options = [...group.options, option];
+      } else {
+        groups.push({
+          label: item.documento,
+          options: [option],
+        });
+      }
+      return groups;
+    }, [] as GroupBase<DocumentOption>[]);
+  }, [documents]);
 
   const selectedOption = useMemo(() => {
     return groupedOptions
