@@ -34,20 +34,22 @@ const appearanceFormSchema = z.object({
 type AppearanceFormValues = z.infer<typeof appearanceFormSchema>
 
 const defaultValues: Partial<AppearanceFormValues> = {
-  theme: "light",
+  theme: "light" as const,
   font: "inter",
 }
-
 
 export function AppearanceForm() {
   const { theme, setTheme } = useTheme();
   const form = useForm<AppearanceFormValues>({
     resolver: zodResolver(appearanceFormSchema),
-    defaultValues: { theme, font: defaultValues.font },
+    defaultValues: { theme: theme as AppearanceFormValues['theme'], font: defaultValues.font },
   })
 
   useEffect(() => {
-    setTheme(form.watch().theme);
+    const currentTheme = form.watch().theme;
+    if (currentTheme !== theme) {
+      setTheme(currentTheme);
+    }
   }, [form.watch().theme]);
 
   function onSubmit(data: AppearanceFormValues) {
