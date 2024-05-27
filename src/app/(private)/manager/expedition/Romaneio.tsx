@@ -147,7 +147,11 @@ export default function Romaneio() {
                     <TableCell className="text-xs text-center py-1 px-1 border-r">{item?.unidade ?? '-'}</TableCell>
                     <TableCell className="text-xs text-start py-1 px-1 border-r">{item?.cor ?? '-'}</TableCell>
                     <TableCell className="text-[10px] text-center py-1 px-0 border-r min-w-16">{item?.material ?? '-'}</TableCell>
-                    <TableCell className="text-[10px] text-center py-1 px-0 border-r">{item?.medidas ? item.medidas.split('x').map(num => parseFloat(num).toFixed(2)).join('x') : '-'}</TableCell>
+                    <TableCell className="text-[10px] text-center py-1 px-0 border-r">
+                      {item?.medidas
+                        ? item.medidas.split('x').map((num: string) => parseFloat(num).toFixed(2)).join('x')
+                        : '-'}
+                    </TableCell>
                     <TableCell className="text-xs text-right py-1 px-1">{item?.peso ?? '-'}</TableCell>
                   </TableRow>
                 ))}
