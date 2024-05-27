@@ -19,7 +19,13 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-export function ExpeditionTable({ currentPage, itemsPerPage }) {
+// Adicionando tipos para currentPage e itemsPerPage
+interface ExpeditionTableProps {
+  currentPage: number;
+  itemsPerPage: number;
+}
+
+export function ExpeditionTable({ currentPage, itemsPerPage }: ExpeditionTableProps) {
   const { expeditionData, removeData } = useContext(ExpeditionContext);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
