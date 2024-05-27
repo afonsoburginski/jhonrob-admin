@@ -108,25 +108,26 @@ export default function Settings() {
           <legend className="-ml-1 px-1 text-sm font-medium">Ordens de produção</legend>
           <div className="grid gap-3">
           <DocumentSelect
-            documents={documents}
-            placeholder="Selecione o documento"
-            value={selectedDocument}
-            onChange={(selectedDocumentData) => {
-              if (selectedDocumentData) {
-                setSelectedDocument(selectedDocumentData);
-                setSelectedData(prevData => ({ ...prevData, documentData: selectedDocumentData }));
-                axios.get(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocumentData.documento}&item=${selectedDocumentData.item}&produto=${selectedDocumentData.produto?.codigo}`)
-                  .then(response => {
-                    setShipmentItems(response.data);
-                    if (response.data.length >= 5) {
-                      const selectedData = response.data.slice(0, 1000);
-                      setShipmentData(selectedData);
-                      setSelectedData(prevData => ({ ...prevData, shipmentData: selectedData }));
-                    }
-                  });
-              }
-            }}
-          />
+  documents={documents}
+  placeholder="Selecione o documento"
+  value={selectedDocument}
+  onChange={(selectedDocumentData: SelectedDocumentData | null) => {
+    if (selectedDocumentData) {
+      setSelectedDocument(selectedDocumentData);
+      setSelectedData(prevData => ({ ...prevData, documentData: selectedDocumentData }));
+      axios.get(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocumentData.documento}&item=${selectedDocumentData.item}&produto=${selectedDocumentData.produto?.codigo}`)
+        .then(response => {
+          setShipmentItems(response.data);
+          if (response.data.length >= 5) {
+            const selectedData = response.data.slice(0, 1000);
+            setShipmentData(selectedData);
+            setSelectedData(prevData => ({ ...prevData, shipmentData: selectedData }));
+          }
+        });
+    }
+  }}
+/>
+
           </div>
           <div className="grid gap-3 max-w-[795px]">
             <Label htmlFor="product">Itens de Embarque</Label>
