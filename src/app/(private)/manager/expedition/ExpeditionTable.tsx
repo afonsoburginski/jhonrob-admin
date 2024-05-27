@@ -25,6 +25,20 @@ interface ExpeditionTableProps {
   itemsPerPage: number;
 }
 
+// Definindo a estrutura esperada de cada item no contexto de expedição
+interface DocumentData {
+  documento: string;
+  item: string;
+  produto: {
+    codigo: string;
+    descricao: string;
+  };
+}
+
+interface ExpeditionData {
+  documentData: DocumentData;
+}
+
 export function ExpeditionTable({ currentPage, itemsPerPage }: ExpeditionTableProps) {
   const { expeditionData, removeData } = useContext(ExpeditionContext);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -45,7 +59,7 @@ export function ExpeditionTable({ currentPage, itemsPerPage }: ExpeditionTablePr
         </TableRow>
       </TableHeader>
       <TableBody>
-        {currentItems && currentItems.map((data, index) => (
+        {currentItems && currentItems.map((data: ExpeditionData, index: number) => (
           data.documentData && data.documentData.produto && (
             <TableRow key={index}>
               <TableCell className="text-xs py-0 border-x" style={{ width: '8%' }}>{data.documentData.documento}</TableCell>
