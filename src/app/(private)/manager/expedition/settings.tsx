@@ -27,19 +27,46 @@ import {
 } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast";
 
+interface Item {
+  codigoProduto: string;
+  descricaoProduto: string;
+  quantidade: number;
+  quantidadeEnviada: number | null;
+}
+
+interface DocumentData {
+  documento: string;
+  pessoa: {
+    codigo: string;
+    descricao: string;
+  };
+  dataCadastro: string;
+  dataPrevEntrega: string;
+  tag: string;
+}
+
+interface SelectedDocument {
+  documento: string;
+  item: string;
+  produto: {
+    codigo: string;
+    descricao: string;
+  } | null;
+}
+
 export default function Settings() {
-  const { documentData, setSelectedData, shipmentData, setShipmentData, selectedDocument, setSelectedDocument } = useContext(DataContext); // Atualizado
+  const { documentData, setSelectedData, shipmentData, setShipmentData, selectedDocument, setSelectedDocument } = useContext(DataContext);
   const { saveData } = useContext(ExpeditionContext);
   const { toast } = useToast();
-  const [documents, setDocuments] = useState([]);
-  const [shipmentItems, setShipmentItems] = useState([]);
-  const [errorMessages, setErrorMessages] = useState({});
+  const [documents, setDocuments] = useState<DocumentData[]>([]);
+  const [shipmentItems, setShipmentItems] = useState<Item[]>([]);
+  const [errorMessages, setErrorMessages] = useState<{ [key: string]: string }>({});
 
-  function groupByFirstLevelProduct(data) {
+  function groupByFirstLevelProduct(data: Item[]): { [key: string]: Item[] } {
     return data.reduce((groups, item) => {
-      const group = (groups[item.codigoProdutoPrimeiroNivel] || []);
+      const group = (groups[item.codigoProduto] || []);
       group.push(item);
-      groups[item.codigoProdutoPrimeiroNivel] = group;
+      groups[item.codigoProduto] = group;
       return groups;
     }, {});
   }
@@ -47,7 +74,7 @@ export default function Settings() {
   const groupedData = useMemo(() => groupByFirstLevelProduct(shipmentData), [shipmentData]);
 
   useEffect(() => {
-    axios.get('http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=100')
+    axios.get<DocumentData[]>('http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=100')
       .then(response => {
         setDocuments(response.data);
       });
@@ -55,7 +82,7 @@ export default function Settings() {
 
   useEffect(() => {
     if (selectedDocument) {
-      axios.get(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocument.documento}&item=${selectedDocument.item}`)
+      axios.get<Item[]>(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocument.documento}&item=${selectedDocument.item}`)
         .then(response => {
           setShipmentItems(response.data);
         });
