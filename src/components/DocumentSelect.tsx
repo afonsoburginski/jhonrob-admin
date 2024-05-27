@@ -1,5 +1,21 @@
 import React, { useMemo } from 'react';
-import Select from 'react-select';
+import Select, { GroupBase, OptionProps } from 'react-select';
+
+interface Document {
+  documento: string;
+  item: string;
+  produto?: {
+    codigo: string;
+    descricao: string;
+  };
+}
+
+interface DocumentSelectProps {
+  documents: Document[];
+  value: OptionProps<Document> | null;
+  onChange: (value: OptionProps<Document> | null) => void;
+  placeholder: string;
+}
 
 const groupStyles = {
   display: 'flex',
@@ -20,14 +36,14 @@ const groupBadgeStyles = {
   textAlign: 'center',
 };
 
-const formatGroupLabel = (data) => (
+const formatGroupLabel = (data: GroupBase<Document>) => (
   <div style={groupStyles}>
     <span>{data.label}</span>
     <span style={groupBadgeStyles}>{data.options.length}</span>
   </div>
 );
 
-const DocumentSelect = ({ documents, value, onChange, placeholder }) => {
+const DocumentSelect: React.FC<DocumentSelectProps> = ({ documents, value, onChange, placeholder }) => {
   const groupedOptions = useMemo(() => documents.reduce((groups, item) => {
     const group = groups.find(group => group.label === item.documento);
     if (group) {
@@ -47,7 +63,7 @@ const DocumentSelect = ({ documents, value, onChange, placeholder }) => {
       });
     }
     return groups;
-  }, []), [documents]);
+  }, [] as GroupBase<Document>[]), [documents]);
 
   const selectedOption = useMemo(() => {
     return groupedOptions
