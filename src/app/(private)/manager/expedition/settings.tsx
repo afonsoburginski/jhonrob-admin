@@ -57,7 +57,7 @@ interface SelectedDocument {
 interface SelectedDocumentData {
   documento: string;
   item: string;
-  produto?: {
+  produto: {
     codigo: string;
     descricao: string;
   };
@@ -108,26 +108,25 @@ export default function Settings() {
           <legend className="-ml-1 px-1 text-sm font-medium">Ordens de produção</legend>
           <div className="grid gap-3">
           <DocumentSelect
-  documents={documents}
-  placeholder="Selecione o documento"
-  value={selectedDocument}
-  onChange={(selectedDocumentData: SelectedDocumentData | null) => {
-    if (selectedDocumentData) {
-      setSelectedDocument(selectedDocumentData);
-      setSelectedData(prevData => ({ ...prevData, documentData: selectedDocumentData }));
-      axios.get(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocumentData.documento}&item=${selectedDocumentData.item}&produto=${selectedDocumentData.produto?.codigo}`)
-        .then(response => {
-          setShipmentItems(response.data);
-          if (response.data.length >= 5) {
-            const selectedData = response.data.slice(0, 1000);
-            setShipmentData(selectedData);
-            setSelectedData(prevData => ({ ...prevData, shipmentData: selectedData }));
-          }
-        });
-    }
-  }}
-/>
-
+            documents={documents}
+            placeholder="Selecione o documento"
+            value={selectedDocument}
+            onChange={(selectedDocumentData: SelectedDocumentData | null) => {
+              if (selectedDocumentData) {
+                setSelectedDocument(selectedDocumentData);
+                setSelectedData((prevData: any) => ({ ...prevData, documentData: selectedDocumentData }));
+                axios.get(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocumentData.documento}&item=${selectedDocumentData.item}&produto=${selectedDocumentData.produto?.codigo}`)
+                  .then(response => {
+                    setShipmentItems(response.data);
+                    if (response.data.length >= 5) {
+                      const selectedData = response.data.slice(0, 1000);
+                      setShipmentData(selectedData);
+                      setSelectedData((prevData: any) => ({ ...prevData, shipmentData: selectedData }));
+                    }
+                  });
+              }
+            }}
+          />
           </div>
           <div className="grid gap-3 max-w-[795px]">
             <Label htmlFor="product">Itens de Embarque</Label>
@@ -135,11 +134,11 @@ export default function Settings() {
               shipmentItems={shipmentItems}
               placeholder="Selecione os Items"
               value={Array.isArray(shipmentData) ? shipmentData.map(data => ({ value: data.codigoProduto, label: data.codigoProduto })) : []}
-              onChange={selectedOptions => {
-                const selectedCodes = selectedOptions.map(option => option.value);
+              onChange={(selectedOptions: any[]) => {
+                const selectedCodes = selectedOptions.map((option: { value: any; }) => option.value);
                 const selectedData = shipmentItems.filter(item => selectedCodes.includes(item.codigoProduto));
                 setShipmentData(selectedData);
-                setSelectedData(prevData => ({ ...prevData, shipmentData: selectedData }));
+                setSelectedData((prevData: any) => ({ ...prevData, shipmentData: selectedData }));
                 console.log("Dados enviados para DataContext: ", selectedData);
               }}
             />
@@ -217,14 +216,14 @@ export default function Settings() {
                                   if (newQuantity < 0) {
                                     newQuantity = 0;
                                   }
-                                  const updatedShipmentData = shipmentData.map((shipmentItem) => {
+                                  const updatedShipmentData = shipmentData.map((shipmentItem: { codigoProduto: string; }) => {
                                     if (shipmentItem.codigoProduto === item.codigoProduto) {
                                       return { ...shipmentItem, quantidadeEnviada: newQuantity };
                                     }
                                     return shipmentItem;
                                   });
                                   setShipmentData(updatedShipmentData);
-                                  setSelectedData((prevData) => ({
+                                  setSelectedData((prevData: any) => ({
                                     ...prevData,
                                     shipmentData: updatedShipmentData,
                                   }));
@@ -247,7 +246,7 @@ export default function Settings() {
                   const dataToSave = { documentData, shipmentData };
                   saveData(dataToSave);
                   const { documento, item, produto } = documentData;
-                  const savedProducts = shipmentData.map(product => product.descricaoProduto).join(', ');
+                  const savedProducts = shipmentData.map((product: { descricaoProduto: any; }) => product.descricaoProduto).join(', ');
                   toast({
                     title: "Dados enviados para Expedição",
                     description: `Documento: ${documento}, Item: ${item}, Produto: ${produto?.codigo} - ${produto?.descricao}`,
