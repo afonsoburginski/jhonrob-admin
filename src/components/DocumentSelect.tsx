@@ -11,10 +11,15 @@ interface DocumentOption {
   };
 }
 
+interface DocumentSelectOption extends DocumentOption {
+  value: string;
+  label: string;
+}
+
 interface DocumentSelectProps {
   documents: DocumentOption[];
-  value: DocumentOption | null;
-  onChange: (value: DocumentOption | null) => void;
+  value: DocumentSelectOption | null;
+  onChange: (value: DocumentSelectOption | null) => void;
   placeholder: string;
 }
 
@@ -37,7 +42,7 @@ const groupBadgeStyles: CSSProperties = {
   textAlign: 'center' as const,
 };
 
-const formatGroupLabel = (data: GroupBase<DocumentOption>) => (
+const formatGroupLabel = (data: GroupBase<DocumentSelectOption>) => (
   <div style={groupStyles}>
     <span>{data.label}</span>
     <span style={groupBadgeStyles}>{data.options.length}</span>
@@ -47,14 +52,18 @@ const formatGroupLabel = (data: GroupBase<DocumentOption>) => (
 const DocumentSelect: React.FC<DocumentSelectProps> = ({ documents, value, onChange, placeholder }) => {
   const groupedOptions = useMemo(() => {
     return documents.reduce((groups, item) => {
-      const group = groups.find(group => group.label === item.documento);
-      const option = {
+      const groupIndex = groups.findIndex(group => group.label === item.documento);
+      const option: DocumentSelectOption = {
         ...item,
         value: `${item.documento}-${item.item}`,
         label: `Item: ${item.item} (${item.produto?.codigo}) ${item.produto?.descricao}`,
       };
-      if (group) {
-        group.options = [...group.options, option];
+      if (groupIndex !== -1) {
+        const updatedGroup = {
+          ...groups[groupIndex],
+          options: [...groups[groupIndex].options, option],
+        };
+        groups[groupIndex] = updatedGroup;
       } else {
         groups.push({
           label: item.documento,
@@ -62,8 +71,9 @@ const DocumentSelect: React.FC<DocumentSelectProps> = ({ documents, value, onCha
         });
       }
       return groups;
-    }, [] as GroupBase<DocumentOption>[]);
+    }, [] as GroupBase<DocumentSelectOption>[]);
   }, [documents]);
+  
 
   const selectedOption = useMemo(() => {
     return groupedOptions
