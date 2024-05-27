@@ -66,9 +66,8 @@ export default function Settings() {
     return data.reduce((groups, item) => {
       const group = (groups[item.codigoProduto] || []);
       group.push(item);
-      groups[item.codigoProduto] = group;
-      return groups;
-    }, {});
+      return { ...groups, [item.codigoProduto]: group };
+    }, {} as { [key: string]: Item[] });
   }
 
   const groupedData = useMemo(() => groupByFirstLevelProduct(shipmentData), [shipmentData]);
