@@ -54,6 +54,15 @@ interface SelectedDocument {
   } | null;
 }
 
+interface SelectedDocumentData {
+  documento: string;
+  item: string;
+  produto?: {
+    codigo: string;
+    descricao: string;
+  };
+}
+
 export default function Settings() {
   const { documentData, setSelectedData, shipmentData, setShipmentData, selectedDocument, setSelectedDocument } = useContext(DataContext);
   const { saveData } = useContext(ExpeditionContext);
@@ -98,7 +107,7 @@ export default function Settings() {
         <fieldset className="grid gap-6 rounded-lg border p-4">
           <legend className="-ml-1 px-1 text-sm font-medium">Ordens de produção</legend>
           <div className="grid gap-3">
-            <DocumentSelect
+            <DocumentSelect<SelectedDocumentData>
               documents={documents}
               placeholder="Selecione o documento"
               value={selectedDocument}
