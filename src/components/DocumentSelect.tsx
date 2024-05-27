@@ -1,4 +1,3 @@
-// DocumentSelect.tsx
 import React, { useMemo } from 'react';
 import Select, { GroupBase, OptionProps } from 'react-select';
 
