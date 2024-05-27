@@ -1,5 +1,5 @@
 // src/app/api/auth/[...nextauth]/route.ts
-import NextAuth, { type NextAuthOptions } from "next-auth";
+import NextAuth, { type NextAuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from 'axios';
 
@@ -15,14 +15,14 @@ const authOptions: NextAuthOptions = {
         if (!login || !senha) {
           throw new Error("Missing login or senha");
         }
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/usuarios/login`, {
+        const response = await axios.post<{ token: string }>(`${process.env.NEXT_PUBLIC_API_URL}/usuarios/login`, {
           login,
           senha
         });
         if (response.status !== 200) {
           throw new Error("Invalid login or senha");
         }
-        const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/usuarios`, {
+        const userResponse = await axios.get<{ nome: string; login: string }[]>(`${process.env.NEXT_PUBLIC_API_URL}/usuarios`, {
           headers: {
             'Authorization': `Bearer ${response.data.token}`
           }
@@ -35,7 +35,7 @@ const authOptions: NextAuthOptions = {
           throw new Error("Failed to fetch user");
         }
         console.log(user);
-        return { name: user.nome, email: user.login, image: null };
+        return { id: user.login, name: user.nome, email: user.login, image: null } as User;
       },
     }),
   ],
@@ -44,3 +44,4 @@ const authOptions: NextAuthOptions = {
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
+
