@@ -1,6 +1,5 @@
-// GroupedMultiSelect.tsx
 import React, { CSSProperties } from 'react';
-import Select from 'react-select';
+import Select, { GroupBase, OptionProps } from 'react-select';
 
 const groupStyles = {
   display: 'flex',
@@ -29,14 +28,21 @@ const localStyles: CSSProperties = {
   fontSize: 12,
 };
 
-const formatGroupLabel = (data) => (
+const formatGroupLabel = (data: GroupBase<OptionProps>) => (
   <div style={groupStyles}>
     <span>Item: {data.label}</span>
     <span style={groupBadgeStyles}>{data.options.length}</span>
   </div>
 );
 
-const GroupedMultiSelect = ({ shipmentItems, value, onChange, placeholder }) => {
+interface GroupedMultiSelectProps {
+  shipmentItems: any[];
+  value: any;
+  onChange: (value: any) => void;
+  placeholder: string;
+}
+
+const GroupedMultiSelect: React.FC<GroupedMultiSelectProps> = ({ shipmentItems, value, onChange, placeholder }) => {
   const groupedOptions = shipmentItems.reduce((groups, item) => {
     const group = groups.find(group => group.label === item.item);
     if (group) {
