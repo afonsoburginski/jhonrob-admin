@@ -12,8 +12,8 @@ interface DocumentOption {
 
 interface DocumentSelectProps {
   documents: DocumentOption[];
-  value: OptionProps<DocumentOption> | null;
-  onChange: (value: OptionProps<DocumentOption> | null) => void;
+  value: DocumentOption | null;
+  onChange: (value: DocumentOption | null) => void;
   placeholder: string;
 }
 
