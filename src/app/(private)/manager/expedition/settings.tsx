@@ -252,7 +252,6 @@ export default function Settings() {
                     title: "Dados enviados para Expedição",
                     description: `Documento: ${documento}, Item: ${item}, Produto: ${produto?.codigo} - ${produto?.descricao}`,
                     duration: 3000,
-                    icon: <CheckCircle className="h-4 w-4" />
                   });
                 }}>
                   <FileText className="h-4 w-4" />
