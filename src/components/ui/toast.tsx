@@ -112,7 +112,15 @@ const ToastDescription = React.forwardRef<
 ))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
-type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
+type ToastProps = {
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  duration?: number;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  icon?: React.ReactNode; // Adicione esta linha
+  // Remova `ToastActionElement` se não for necessário
+};
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
 
