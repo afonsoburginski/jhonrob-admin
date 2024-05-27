@@ -3,16 +3,15 @@ import NextAuth, { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from 'axios';
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       credentials: {
         login: { label: "Login", type: "text" },
         senha: { label: "Senha", type: "password" }
       },
-      // @ts-ignore
       async authorize(credentials) {
-        const { login, senha } = credentials ?? {}
+        const { login, senha } = credentials ?? {};
         if (!login || !senha) {
           throw new Error("Missing login or senha");
         }
