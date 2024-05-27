@@ -32,7 +32,9 @@ interface Item {
   descricaoProduto: string;
   quantidade: number;
   quantidadeEnviada: number | null;
+  descricaoProdutoPrimeiroNivel?: string; // Adiciona a propriedade opcional
 }
+
 
 interface DocumentData {
   documento: string;
