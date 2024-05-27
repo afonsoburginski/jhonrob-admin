@@ -29,14 +29,14 @@ export default function LoginForm() {
   
     try {
       console.log(`Fazendo login com usuário: ${login} e senha: ${senha}`);
-
-      const response = await signIn('credentials', { 
-        redirect: false, 
-        login, 
-        senha 
+  
+      const response = await signIn('credentials', {
+        redirect: false,
+        login,
+        senha
       });
   
-      if (response.error) {
+      if (response && response.error) {
         throw new Error(response.error);
       }
   
@@ -59,7 +59,7 @@ export default function LoginForm() {
         description: "Falha no login. Por favor, tente novamente.",
       });
     }
-  };
+  };  
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-muted/40">
