@@ -44,7 +44,7 @@ interface GroupedMultiSelectProps {
 
 const GroupedMultiSelect: React.FC<GroupedMultiSelectProps> = ({ shipmentItems, value, onChange, placeholder }) => {
   const groupedOptions = shipmentItems.reduce((groups, item) => {
-    const group = groups.find(group => group.label === item.item);
+    const group = groups.find((group: { label: any; }) => group.label === item.item);
     if (group) {
       group.options.push({ 
         value: item.codigoProduto, 
