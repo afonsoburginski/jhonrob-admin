@@ -25,7 +25,6 @@ interface ExpeditionTableProps {
   itemsPerPage: number;
 }
 
-// Definindo a estrutura esperada de cada item no contexto de expedição
 interface DocumentData {
   documento: string;
   item: string;

@@ -45,6 +45,18 @@ export default function Expedition() {
     }
   };
 
+  const handleSend = async () => {
+    try {
+      const response = await fetch('file:\\192.168.1.102/Arquivos/DESENHOS%20GERENCIADOR/180/180004615_02.dwf');
+      if (!response.ok) {
+        throw new Error('Erro na chamada da API');
+      }
+      console.log('Chamada da API bem-sucedida');
+    } catch (error) {
+      console.error('Erro na chamada da API:', error);
+    }
+  };
+
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
       <div className="flex flex-col sm:gap-4 sm:py-4">
@@ -78,7 +90,7 @@ export default function Expedition() {
                     <CardDescription>
                       Lista de itens enviados para expedição
                     </CardDescription>
-                    <Button size="default" variant="outline" className="h-6">
+                    <Button size="default" variant="outline" className="h-6" onClick={handleSend}>
                       Enviar
                     </Button>
                   </div>
