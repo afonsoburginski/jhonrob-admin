@@ -1,3 +1,4 @@
+// expedition.tsx
 'use client'
 import React, { useState, useContext } from 'react';
 import { ExpeditionTable } from './ExpeditionTable';
@@ -45,16 +46,16 @@ export default function Expedition() {
     }
   };
 
-  const handleSend = async () => {
-    try {
-      const response = await fetch('file:\\192.168.1.102/Arquivos/DESENHOS%20GERENCIADOR/180/180004615_02.dwf');
-      if (!response.ok) {
-        throw new Error('Erro na chamada da API');
-      }
-      console.log('Chamada da API bem-sucedida');
-    } catch (error) {
-      console.error('Erro na chamada da API:', error);
-    }
+  const handleDownload = async () => {
+    const response = await fetch('/api/download?filePath=180004615_02.dwf');
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '180004615_02.dwf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   };
 
   return (
@@ -90,7 +91,7 @@ export default function Expedition() {
                     <CardDescription>
                       Lista de itens enviados para expedição
                     </CardDescription>
-                    <Button size="default" variant="outline" className="h-6" onClick={handleSend}>
+                    <Button size="default" variant="outline" className="h-6" onClick={handleDownload}>
                       Enviar
                     </Button>
                   </div>
