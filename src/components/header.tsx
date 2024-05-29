@@ -106,7 +106,7 @@ export default function Header() {
           <DropdownMenuItem><Link href="/settings">Configurações</Link></DropdownMenuItem>
           <DropdownMenuItem>Suporte</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => signOut()}>Sair</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/login' })}>Sair</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>

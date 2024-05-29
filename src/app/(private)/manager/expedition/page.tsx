@@ -46,16 +46,16 @@ export default function Expedition() {
     }
   };
 
-  const handleDownload = async () => {
-    const response = await fetch('/api/download?filePath=180004615_02.dwf');
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '180004615_02.dwf';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+  const openFileInAutoCAD = () => {
+    const filePath = "/assets/010000006_00.dwg";
+    const isAutoCADInstalled = true;
+
+    if (isAutoCADInstalled) {
+      window.open(filePath, "_blank");
+    } else {
+      alert("AutoCAD não encontrado. Abrindo no Bloco de Notas.");
+      window.open(filePath, "_blank");
+    }
   };
 
   return (
@@ -91,8 +91,8 @@ export default function Expedition() {
                     <CardDescription>
                       Lista de itens enviados para expedição
                     </CardDescription>
-                    <Button size="default" variant="outline" className="h-6" onClick={handleDownload}>
-                      Enviar
+                    <Button size="default" variant="outline" className="h-6" onClick={openFileInAutoCAD}>
+                      Abrir
                     </Button>
                   </div>
                 </CardHeader>
