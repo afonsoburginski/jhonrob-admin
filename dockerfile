@@ -1,3 +1,4 @@
+# Dockerfile
 # Use the official lightweight Node.js 18 image
 FROM node:18.17.0-alpine AS build
 
@@ -14,17 +15,18 @@ COPY . .
 # Build the Next.js application
 RUN npm run build
 
-# Use the official Nginx image
-FROM nginx:alpine
+# Use another lightweight Node.js image for the runtime
+FROM node:18.17.0-alpine AS runtime
 
-# Copy the built app from the build stage to the final stage
-COPY --from=build /app/.next /usr/share/nginx/html
+# Set the working directory
+WORKDIR /app
 
-# Copy the nginx configuration file
-COPY nginx/nginx.conf /etc/nginx/nginx.conf
+# Copy the built Next.js app and node_modules to the runtime image
+COPY --from=build /app/public ./public
+COPY --from=build /app/.next ./.next
 
-# Expose port 8080
-EXPOSE 8080
+# Expose the port Next.js will run on
+EXPOSE 3000
 
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start the Next.js application
+CMD ["npm", "run", "start"]
