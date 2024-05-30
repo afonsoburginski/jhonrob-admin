@@ -19,7 +19,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-// Adicionando tipos para currentPage e itemsPerPage
 interface ExpeditionTableProps {
   currentPage: number;
   itemsPerPage: number;

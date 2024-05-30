@@ -1,6 +1,7 @@
 // expedition.tsx
 'use client'
 import React, { useState, useContext } from 'react';
+import AsyncSelect from 'react-select/async';
 import { ExpeditionTable } from './ExpeditionTable';
 import Settings from './settings';
 import Romaneio from './Romaneio';
@@ -26,6 +27,7 @@ import {
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExpeditionContext } from '@/context/ExpeditionProvider';
+
 
 export default function Expedition() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,18 +60,77 @@ export default function Expedition() {
     }
   };
 
+  const loadOptions = (inputValue: string, callback: (options: any[]) => void) => {
+    if (inputValue.trim() === "") {
+      callback([]);
+      return;
+    }
+  
+    const apiUrl = `http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=100000`;
+  
+    fetch(apiUrl)
+      .then(response => response.json())
+      .then(data => {
+        const filteredData = data.filter((item: any) =>
+          item.documento.toString().includes(inputValue) ||
+          item.pessoa?.descricao?.toLowerCase().includes(inputValue.toLowerCase()) ||
+          item.produto.descricao.toLowerCase().includes(inputValue.toLowerCase())
+        );
+  
+        const limitedData = filteredData.slice(0, 100);
+
+        limitedData.sort((a: any, b: any) => a.item - b.item);
+  
+        const groupedOptions = limitedData.reduce((acc: any, item: any) => {
+          const label = `OF:${item.documento} - Cliente: ${item.pessoa?.descricao}`;
+          const existingGroup = acc.find((group: any) => group.label === label);
+  
+          if (existingGroup) {
+            existingGroup.options.push({
+              value: {
+                documento: item.documento,
+                codigoProduto: item.produto.codigo,
+                item: item.item
+              },
+              label: `Item:${item.item} - ${item.produto.codigo} - ${item.produto.descricao}`
+            });
+          } else {
+            acc.push({
+              label,
+              options: [{
+                value: {
+                  documento: item.documento,
+                  codigoProduto: item.produto.codigo,
+                  item: item.item
+                },
+                label: `Item:${item.item} - ${item.produto.codigo} - ${item.produto.descricao}`
+              }]
+            });
+          }
+  
+          return acc;
+        }, []);
+  
+        callback(groupedOptions);
+      })
+      .catch(error => {
+        console.error('Erro ao carregar opções:', error);
+        callback([]);
+      });
+  };
+  
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
       <div className="flex flex-col sm:gap-4 sm:py-4">
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          <Tabs defaultValue="of">
+          <Tabs defaultValue="expedition">
             <div className="flex items-center justify-between">
               <TabsList>
-                <TabsTrigger value="of">Embarque</TabsTrigger>
+              <TabsTrigger value="boarding">Embarque</TabsTrigger>
                 <TabsTrigger value="expedition">Expedição</TabsTrigger>
               </TabsList>
             </div>
-            <TabsContent value="of" className="flex flex-row justify-around gap-8">
+            <TabsContent value="boarding" className="flex flex-row justify-around gap-8">
               <Card x-chunk="dashboard-06-chunk-1" className="flex-grow">
                 <CardHeader>
                   <CardTitle>Embarque</CardTitle>
@@ -86,6 +147,17 @@ export default function Expedition() {
             <TabsContent value="expedition">
               <Card x-chunk="dashboard-06-chunk-1">
                 <CardHeader>
+                <AsyncSelect
+                  cacheOptions
+                  loadOptions={loadOptions}
+                  defaultOptions
+                  isMulti
+                  formatGroupLabel={(data) => (
+                    <div className="text-gray-700 text-base font">
+                      <strong>{data.label}</strong>
+                    </div>
+                  )}
+                />
                   <CardTitle>Expedição</CardTitle>
                   <div className="flex justify-between items-center">
                     <CardDescription>
