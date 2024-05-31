@@ -66,9 +66,9 @@ export default function Settings() {
 
   function groupByFirstLevelProduct(data: Item[]): { [key: string]: Item[] } {
     return data.reduce((groups, item) => {
-      const group = (groups[item.codigoProduto] || []);
+      const group = (groups[item.descricaoProdutoPrimeiroNivel || ''] || []);
       group.push(item);
-      return { ...groups, [item.codigoProduto]: group };
+      return { ...groups, [item.descricaoProdutoPrimeiroNivel || '']: group };
     }, {} as { [key: string]: Item[] });
   }
 
@@ -227,14 +227,13 @@ export default function Settings() {
                   </TableRow>
                 </TableHeader>
                 <TableBody className="border">
-                {Object.entries(groupedData).map(([codigoProdutoPrimeiroNivel, group], groupIndex) => {
-                  const descricaoProdutoPrimeiroNivel = group[0].descricaoProdutoPrimeiroNivel;
+                {Object.entries(groupedData).map(([descricaoProdutoPrimeiroNivel, group], groupIndex) => {
                   return (
                     <React.Fragment key={groupIndex}>
                       <TableRow className="bg-gray-200">
                         <TableHead colSpan={3} className="text-start text-xs font-bold h-6">
                           <div className="w-[37rem] truncate">
-                            ({codigoProdutoPrimeiroNivel}) {descricaoProdutoPrimeiroNivel}
+                            {descricaoProdutoPrimeiroNivel}
                           </div>
                         </TableHead>
                       </TableRow>
@@ -257,11 +256,9 @@ export default function Settings() {
                                 onChange={(e) => {
                                   let newQuantity = parseInt(e.target.value);
                                   if (newQuantity > item.quantidade) {
-                                    // Defina a mensagem de erro quando o valor inserido for muito alto
                                     setErrorMessages(prev => ({ ...prev, [item.codigoProduto]: 'Valor excedido' }));
                                     newQuantity = item.quantidade;
                                   } else {
-                                    // Limpe a mensagem de erro quando o valor inserido for válido
                                     setErrorMessages(prev => {
                                       const { [item.codigoProduto]: _, ...rest } = prev;
                                       return rest;
