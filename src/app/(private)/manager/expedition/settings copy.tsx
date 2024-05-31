@@ -85,6 +85,23 @@ export default function Settings() {
       });
   }, []);
 
+  useEffect(() => {
+    if (selectedDocument) {
+      axios.get<Item[]>(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocument.documento}&item=${selectedDocument.item}`)
+        .then(response => {
+          setShipmentItems(response.data);
+        })
+        .catch(error => {
+          console.error('Erro ao carregar itens de embarque:', error);
+          setErrorMessages(prev => ({ ...prev, shipmentItems: 'Erro ao carregar itens de embarque' }));
+        });
+    }
+  }, [selectedDocument]);
+
+  useEffect(() => {
+    setShipmentData(shipmentData);
+  }, [shipmentData, setShipmentData]);
+
   const loadOptions = (inputValue: string, callback: (options: any[]) => void) => {
     if (inputValue.trim() === "") {
       callback([]);
@@ -112,14 +129,22 @@ export default function Settings() {
 
           if (existingGroup) {
             existingGroup.options.push({
-              value: item,
+              value: {
+                documento: item.documento,
+                codigoProduto: item.produto.codigo,
+                item: item.item
+              },
               label: `Item:${item.item} - ${item.produto.codigo} - ${item.produto.descricao}`
             });
           } else {
             acc.push({
               label,
               options: [{
-                value: item,
+                value: {
+                  documento: item.documento,
+                  codigoProduto: item.produto.codigo,
+                  item: item.item
+                },
                 label: `Item:${item.item} - ${item.produto.codigo} - ${item.produto.descricao}`
               }]
             });
@@ -136,29 +161,6 @@ export default function Settings() {
       });
   };
 
-  const handleDocumentSelect = (selectedOption: any) => {
-    if (selectedOption) {
-      const selectedDocument = selectedOption.value;
-      setSelectedDocument(selectedDocument);
-      setSelectedData((prevData: any) => ({ ...prevData, documentData: selectedDocument }));
-      
-      axios.get<Item[]>(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocument.documento}&item=${selectedDocument.item}`)
-        .then(response => {
-          const items = response.data.map(item => ({
-            ...item,
-            quantidadeEnviada: 0 // Inicializa a quantidadeEnviada com 0
-          }));
-          setShipmentItems(items);
-          setShipmentData(items);
-          setSelectedData((prevData: any) => ({ ...prevData, shipmentData: items }));
-        })
-        .catch(error => {
-          console.error('Erro ao carregar itens de embarque:', error);
-          setErrorMessages(prev => ({ ...prev, shipmentItems: 'Erro ao carregar itens de embarque' }));
-        });
-    }
-  };
-
   return (
     <div className="relative hidden flex-col items-start gap-8 md:flex">
       <form className="grid w-full items-start gap-6">
@@ -170,11 +172,26 @@ export default function Settings() {
               loadOptions={loadOptions}
               defaultOptions
               placeholder="Selecione o documento"
-              value={selectedDocument ? { 
-                label: `OF:${selectedDocument.documento} - Cliente: ${selectedDocument.pessoa.descricao}`, 
-                value: selectedDocument 
-              } : null}
-              onChange={handleDocumentSelect}
+              value={selectedDocument}
+              onChange={(selectedDocument: any | null) => {
+                if (selectedDocument) {
+                  setSelectedDocument(selectedDocument);
+                  setSelectedData((prevData: any) => ({ ...prevData, documentData: selectedDocument }));
+                  axios.get(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocument.value.documento}&item=${selectedDocument.value.item}`)
+                    .then(response => {
+                      setShipmentItems(response.data);
+                      if (response.data.length >= 5) {
+                        const selectedData = response.data.slice(0, 1000);
+                        setShipmentData(selectedData);
+                        setSelectedData((prevData: any) => ({ ...prevData, shipmentData: selectedData }));
+                      }
+                    })
+                    .catch(error => {
+                      console.error('Erro ao carregar itens de embarque:', error);
+                      setErrorMessages(prev => ({ ...prev, shipmentItems: 'Erro ao carregar itens de embarque' }));
+                    });
+                }
+              }}
               formatGroupLabel={(data) => (
                 <div className="text-gray-700 text-base font">
                   <strong>{data.label}</strong>

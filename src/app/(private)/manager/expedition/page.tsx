@@ -27,7 +27,7 @@ import {
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExpeditionContext } from '@/context/ExpeditionProvider';
-
+import axios from 'axios';
 
 export default function Expedition() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,26 +65,26 @@ export default function Expedition() {
       callback([]);
       return;
     }
-  
+
     const apiUrl = `http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=100000`;
-  
-    fetch(apiUrl)
-      .then(response => response.json())
-      .then(data => {
+
+    axios.get(apiUrl)
+      .then(response => {
+        const data = response.data;
         const filteredData = data.filter((item: any) =>
           item.documento.toString().includes(inputValue) ||
           item.pessoa?.descricao?.toLowerCase().includes(inputValue.toLowerCase()) ||
           item.produto.descricao.toLowerCase().includes(inputValue.toLowerCase())
         );
-  
+
         const limitedData = filteredData.slice(0, 100);
 
         limitedData.sort((a: any, b: any) => a.item - b.item);
-  
+
         const groupedOptions = limitedData.reduce((acc: any, item: any) => {
           const label = `OF:${item.documento} - Cliente: ${item.pessoa?.descricao}`;
           const existingGroup = acc.find((group: any) => group.label === label);
-  
+
           if (existingGroup) {
             existingGroup.options.push({
               value: {
@@ -107,10 +107,10 @@ export default function Expedition() {
               }]
             });
           }
-  
+
           return acc;
         }, []);
-  
+
         callback(groupedOptions);
       })
       .catch(error => {
