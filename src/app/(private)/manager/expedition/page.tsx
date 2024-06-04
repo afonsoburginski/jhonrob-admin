@@ -31,7 +31,7 @@ import axios from 'axios';
 
 export default function Expedition() {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  const itemsPerPage = 18;
   const { expeditionData } = useContext(ExpeditionContext);
   const totalItems = expeditionData.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -48,82 +48,34 @@ export default function Expedition() {
     }
   };
 
-  const openFileInAutoCAD = () => {
-    const filePath = "/assets/010000006_00.dwg";
-    const isAutoCADInstalled = true;
-
-    if (isAutoCADInstalled) {
-      window.open(filePath, "_blank");
-    } else {
-      alert("AutoCAD não encontrado. Abrindo no Bloco de Notas.");
-      window.open(filePath, "_blank");
+  const openFileInAutoCAD = async () => {
+    const filePath = '/api/download'; // API route for downloading
+  
+    try {
+      const response = await fetch(filePath);
+      if (!response.ok) {
+        throw new Error('Error downloading file');
+      }
+  
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+  
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = '010000006_00.dwg';
+      link.click();
+    } catch (error) {
+      console.error(error);
+      alert('Error opening file');
     }
   };
-
-  const loadOptions = (inputValue: string, callback: (options: any[]) => void) => {
-    if (inputValue.trim() === "") {
-      callback([]);
-      return;
-    }
-
-    const apiUrl = `http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=100000`;
-
-    axios.get(apiUrl)
-      .then(response => {
-        const data = response.data;
-        const filteredData = data.filter((item: any) =>
-          item.documento.toString().includes(inputValue) ||
-          item.pessoa?.descricao?.toLowerCase().includes(inputValue.toLowerCase()) ||
-          item.produto.descricao.toLowerCase().includes(inputValue.toLowerCase())
-        );
-
-        const limitedData = filteredData.slice(0, 100);
-
-        limitedData.sort((a: any, b: any) => a.item - b.item);
-
-        const groupedOptions = limitedData.reduce((acc: any, item: any) => {
-          const label = `OF:${item.documento} - Cliente: ${item.pessoa?.descricao}`;
-          const existingGroup = acc.find((group: any) => group.label === label);
-
-          if (existingGroup) {
-            existingGroup.options.push({
-              value: {
-                documento: item.documento,
-                codigoProduto: item.produto.codigo,
-                item: item.item
-              },
-              label: `Item:${item.item} - ${item.produto.codigo} - ${item.produto.descricao}`
-            });
-          } else {
-            acc.push({
-              label,
-              options: [{
-                value: {
-                  documento: item.documento,
-                  codigoProduto: item.produto.codigo,
-                  item: item.item
-                },
-                label: `Item:${item.item} - ${item.produto.codigo} - ${item.produto.descricao}`
-              }]
-            });
-          }
-
-          return acc;
-        }, []);
-
-        callback(groupedOptions);
-      })
-      .catch(error => {
-        console.error('Erro ao carregar opções:', error);
-        callback([]);
-      });
-  };
+  
   
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
       <div className="flex flex-col sm:gap-4 sm:py-4">
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          <Tabs defaultValue="expedition">
+          <Tabs defaultValue="boarding">
             <div className="flex items-center justify-between">
               <TabsList>
               <TabsTrigger value="boarding">Embarque</TabsTrigger>
@@ -147,24 +99,13 @@ export default function Expedition() {
             <TabsContent value="expedition">
               <Card x-chunk="dashboard-06-chunk-1">
                 <CardHeader>
-                <AsyncSelect
-                  cacheOptions
-                  loadOptions={loadOptions}
-                  defaultOptions
-                  isMulti
-                  formatGroupLabel={(data) => (
-                    <div className="text-gray-700 text-base font">
-                      <strong>{data.label}</strong>
-                    </div>
-                  )}
-                />
                   <CardTitle>Expedição</CardTitle>
                   <div className="flex justify-between items-center">
                     <CardDescription>
                       Lista de itens enviados para expedição
                     </CardDescription>
                     <Button size="default" variant="outline" className="h-6" onClick={openFileInAutoCAD}>
-                      Abrir
+                      Download
                     </Button>
                   </div>
                 </CardHeader>

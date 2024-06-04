@@ -8,7 +8,7 @@ import {
   Truck,
   Home,
   Server,
-  DatabaseZap,
+  ArrowLeftRight,
   Users2,
   LineChart,
   Settings } from "lucide-react";
@@ -90,14 +90,14 @@ export default function Sidebar() {
       <Tooltip>
         <TooltipTrigger asChild>
           <Link
-            href="/analytics"
-            className={linkClass('/analytics')}
+            href="/orders"
+            className={linkClass('/orders')}
           >
-            <LineChart className="h-5 w-5" />
-            <span className="sr-only">Analytics</span>
+            <ArrowLeftRight className="h-5 w-5" />
+            <span className="sr-only">Orders</span>
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="right">Analytics</TooltipContent>
+        <TooltipContent side="right">Orders</TooltipContent>
       </Tooltip>
     </nav>
     <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">

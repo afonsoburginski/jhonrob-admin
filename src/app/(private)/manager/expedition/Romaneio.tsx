@@ -26,8 +26,6 @@ import {
   PaginationContent,
   PaginationItem,
 } from "@/components/ui/pagination"
-
-// Definindo a estrutura esperada de cada item em shipmentData
 interface ShipmentData {
   peso?: string;
   quantidade?: string;

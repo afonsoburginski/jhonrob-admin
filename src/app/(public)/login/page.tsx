@@ -43,7 +43,7 @@ export default function LoginForm() {
       toast({
         title: "Sucesso!",
         description: (
-          <div className=" flex justify-between item-center">
+          <div className="flex justify-between item-center">
             Login realizado com sucesso.
             <CheckCircle className="ml-2 text-blue-500" size="24" />
           </div>

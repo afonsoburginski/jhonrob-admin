@@ -159,6 +159,21 @@ export default function Settings() {
     }
   };
 
+  const validateQuantities = () => {
+    for (const item of shipmentData) {
+      if (item.quantidadeEnviada === 0 || item.quantidadeEnviada === null) {
+        toast({
+          title: "Erro",
+          description: "Todos os campos de quantidade devem ser preenchidos e não podem ser zero.",
+          duration: 3000,
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
+    return true;
+  };
+
   return (
     <div className="relative hidden flex-col items-start gap-8 md:flex">
       <form className="grid w-full items-start gap-6">
@@ -292,21 +307,28 @@ export default function Settings() {
               </Table>
               </CardContent>
               <CardFooter className="justify-center border-t p-1">
-                <Button size="sm" variant="ghost" className="gap-1" onClick={(event) => {
-                  event.preventDefault();
-                  const dataToSave = { documentData, shipmentData };
-                  saveData(dataToSave);
-                  const { documento, item, produto } = documentData;
-                  const savedProducts = shipmentData.map((product: { descricaoProduto: any; }) => product.descricaoProduto).join(', ');
-                  toast({
-                    title: "Dados enviados para Expedição",
-                    description: `Documento: ${documento}, Item: ${item}, Produto: ${produto?.codigo} - ${produto?.descricao}`,
-                    duration: 3000,
-                  });
-                }}>
-                  <FileText className="h-4 w-4" />
-                  Salvar
-                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="gap-1"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    if (validateQuantities()) {
+                      const dataToSave = { documentData, shipmentData };
+                      saveData(dataToSave);
+                      const { documento, item, produto } = documentData;
+                      const savedProducts = shipmentData.map((product: { descricaoProduto: any; }) => product.descricaoProduto).join(', ');
+                      toast({
+                        title: "Dados enviados para Expedição",
+                        description: `Documento: ${documento}, Item: ${item}, Produto: ${produto?.codigo} - ${produto?.descricao}`,
+                        duration: 3000,
+                      });
+                    }
+                  }}
+                >
+                <FileText className="h-4 w-4" />
+                Salvar
+              </Button>
               </CardFooter>
             </Card>
           </div>

@@ -38,7 +38,7 @@ interface ShipmentData {
 export default function Romaneio() {
   const { documentData, shipmentData } = useContext(DataContext);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(15);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
@@ -59,8 +59,8 @@ export default function Romaneio() {
     const calculateItemsPerPage = () => {
       if (tableContainerRef.current) {
         const containerHeight = tableContainerRef.current.clientHeight;
-        const rowHeight = 24; // Assuming an average row height (adjust as necessary)
-        const headerHeight = 24; // Assuming the height of the header (adjust as necessary)
+        const rowHeight = 24;
+        const headerHeight = 24;
         const availableHeight = containerHeight - headerHeight;
         const calculatedItemsPerPage = Math.floor(availableHeight / rowHeight);
         setItemsPerPage(calculatedItemsPerPage);
@@ -123,7 +123,7 @@ export default function Romaneio() {
         </div>
       </CardContent>
       <CardDescription className="text-xs font-bold mt-5">{'Status = { P = Pendente, E = Embarcado, C = Cancelado, N = Não Retirado, R = Retirado }'}</CardDescription>
-      <div ref={tableContainerRef} className="overflow-y-auto" style={{ maxHeight: '60vh' }}>
+      <div ref={tableContainerRef} className="overflow-y-auto max-h-96">
         <Table className="w-full">
           <TableHeader>
             <TableRow>

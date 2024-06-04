@@ -85,8 +85,8 @@ const GroupedMultiSelect: React.FC<GroupedMultiSelectProps> = ({ shipmentItems, 
         valueContainer: (base) => ({
           ...base,
           height: 'auto',
-          maxHeight: '68px', // Limita a altura máxima para o equivalente a duas linhas
-          overflowY: 'auto', // Adiciona uma barra de rolagem vertical se necessário
+          maxHeight: '65px',
+          overflowY: 'auto',
         }),
       }}
     />
