@@ -33,6 +33,7 @@ interface Item {
   quantidade: number;
   quantidadeEnviada: number | null;
   descricaoProdutoPrimeiroNivel?: string;
+  codigoProdutoPrimeiroNivel?: string;
 }
 
 interface DocumentData {
@@ -242,66 +243,67 @@ export default function Settings() {
                   </TableRow>
                 </TableHeader>
                 <TableBody className="border">
-                {Object.entries(groupedData).map(([descricaoProdutoPrimeiroNivel, group], groupIndex) => {
-                  return (
-                    <React.Fragment key={groupIndex}>
-                      <TableRow className="bg-gray-200">
-                        <TableHead colSpan={3} className="text-start text-xs font-bold h-6">
-                          <div className="w-[37rem] truncate">
-                            {descricaoProdutoPrimeiroNivel}
-                          </div>
-                        </TableHead>
-                      </TableRow>
-                      {group.map((item, index) => {
-                        return (
-                          <TableRow key={index}>
-                            <TableCell className="text-xs py-1 w-1/5">{item.codigoProduto}</TableCell>
-                            <TableCell className="text-xs py-1 w-96" >{item.descricaoProduto}</TableCell>
+                  {Object.entries(groupedData).map(([descricaoProdutoPrimeiroNivel, group], groupIndex) => {
+                    const codigoProdutoPrimeiroNivel = group.length > 0 ? group[0].codigoProdutoPrimeiroNivel : ''; // Obtém o código do produto do primeiro item do grupo
+                    return (
+                      <React.Fragment key={groupIndex}>
+                        <TableRow className="bg-gray-200">
+                          <TableHead colSpan={3} className="text-start text-xs font-bold h-6">
+                            <div className="w-[37rem] truncate">
+                              ({codigoProdutoPrimeiroNivel}) {descricaoProdutoPrimeiroNivel}
+                            </div>
+                          </TableHead>
+                        </TableRow>
+                        {group.map((item, index) => {
+                          return (
+                            <TableRow key={index}>
+                              <TableCell className="text-xs py-1 w-1/5">{item.codigoProduto}</TableCell>
+                              <TableCell className="text-xs py-1 w-96">{item.descricaoProduto}</TableCell>
                               <TableCell className="text-xs py-1 w-1/5">
-                              <Input
-                                className="h-6 text-xs"
-                                id={`quantity-${item.codigoProduto}`}
-                                type="number"
-                                value={item.quantidadeEnviada !== null ? item.quantidadeEnviada : 0}
-                                max={item.quantidade}
-                                step="1"
-                                onKeyPress={(e) => {
-                                  if (e.key === 'Enter') e.preventDefault();
-                                }}
-                                onChange={(e) => {
-                                  let newQuantity = parseInt(e.target.value);
-                                  if (newQuantity > item.quantidade) {
-                                    setErrorMessages(prev => ({ ...prev, [item.codigoProduto]: 'Valor excedido' }));
-                                    newQuantity = item.quantidade;
-                                  } else {
-                                    setErrorMessages(prev => {
-                                      const { [item.codigoProduto]: _, ...rest } = prev;
-                                      return rest;
-                                    });
-                                  }
-                                  if (newQuantity < 0) {
-                                    newQuantity = 0;
-                                  }
-                                  const updatedShipmentData = shipmentData.map((shipmentItem: { codigoProduto: string; }) => {
-                                    if (shipmentItem.codigoProduto === item.codigoProduto) {
-                                      return { ...shipmentItem, quantidadeEnviada: newQuantity };
+                                <Input
+                                  className="h-5 text-xs"
+                                  id={`quantity-${item.codigoProduto}`}
+                                  type="number"
+                                  value={item.quantidadeEnviada !== null ? item.quantidadeEnviada : 0}
+                                  max={item.quantidade}
+                                  step="1"
+                                  onKeyPress={(e) => {
+                                    if (e.key === 'Enter') e.preventDefault();
+                                  }}
+                                  onChange={(e) => {
+                                    let newQuantity = parseInt(e.target.value);
+                                    if (newQuantity > item.quantidade) {
+                                      setErrorMessages(prev => ({ ...prev, [item.codigoProduto]: 'Valor excedido' }));
+                                      newQuantity = item.quantidade;
+                                    } else {
+                                      setErrorMessages(prev => {
+                                        const { [item.codigoProduto]: _, ...rest } = prev;
+                                        return rest;
+                                      });
                                     }
-                                    return shipmentItem;
-                                  });
-                                  setShipmentData(updatedShipmentData);
-                                  setSelectedData((prevData: any) => ({
-                                    ...prevData,
-                                    shipmentData: updatedShipmentData,
-                                  }));
-                                }}
-                              />
-                              {errorMessages[item.codigoProduto] && <span className="text-red-500">{errorMessages[item.codigoProduto]}</span>}
+                                    if (newQuantity < 0) {
+                                      newQuantity = 0;
+                                    }
+                                    const updatedShipmentData = shipmentData.map((shipmentItem: { codigoProduto: string; }) => {
+                                      if (shipmentItem.codigoProduto === item.codigoProduto) {
+                                        return { ...shipmentItem, quantidadeEnviada: newQuantity };
+                                      }
+                                      return shipmentItem;
+                                    });
+                                    setShipmentData(updatedShipmentData);
+                                    setSelectedData((prevData: any) => ({
+                                      ...prevData,
+                                      shipmentData: updatedShipmentData,
+                                    }));
+                                  }}
+                                />
+                                {errorMessages[item.codigoProduto] && <span className="text-red-500">{errorMessages[item.codigoProduto]}</span>}
                               </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </React.Fragment>
-                  );
+                            </TableRow>
+                          );
+                        })}
+                      </React.Fragment>
+                    );
                   })}
                 </TableBody>
               </Table>

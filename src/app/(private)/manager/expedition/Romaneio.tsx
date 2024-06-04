@@ -136,7 +136,7 @@ export default function Romaneio() {
                 {group.map((item, index) => (
                   <TableRow key={index}>
                     <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.quantidade ?? '-'}</TableCell>
-                    <TableCell className="text-xs text-right py-1 px-1 border-r">
+                    <TableCell className={`text-xs text-right py-1 px-1 border-r ${item?.quantidadeEnviada ? 'bg-blue-100' : ''}`}>
                       {item?.quantidade ? parseFloat(item.quantidade) - parseFloat(item.quantidadeEnviada ?? '0') : '-'}
                     </TableCell>
                     <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.codigoProduto ?? '-'}</TableCell>
