@@ -9,13 +9,32 @@ export default async function middleware(req: NextRequest) {
 
   const session = await getToken({ req, secret });
 
-  const privateRoutes = ["/", "/manager", "/propose", "/products", "/expedition"];
+  const privateRoutes = [
+    "/",
+    "/manager/expedition",
+    "/manager/propose",
+    "/users",
+    "/orders",
+    "/settings",
+  ];
 
-  if (privateRoutes.includes(path) && !session) {
+  if (!session && privateRoutes.includes(path)) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
-  if (session && (path === "/login" || path === "/register")) {
-    return NextResponse.redirect(new URL("/", req.url));
+
+  if (session) {
+    if (path === "/login" || path === "/register") {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    // Allow users with role "Adm" to access all routes
+    if (session.role === "Adm") {
+      return NextResponse.next();
+    }
+
+    if (session.role === "Exp" && path !== "/manager/expedition") {
+      return NextResponse.redirect(new URL("/manager/expedition", req.url));
+    }
   }
 
   return NextResponse.next();
@@ -24,11 +43,11 @@ export default async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/",
-    "/manager",
     "/manager/expedition",
     "/manager/propose",
-    "/products",
-    "/expedition",
+    "/users",
+    "/orders",
+    "/settings",
     "/login",
     "/register"
   ],

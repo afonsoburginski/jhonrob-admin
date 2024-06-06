@@ -78,11 +78,11 @@ export default function Sidebar() {
       <Tooltip>
         <TooltipTrigger asChild>
           <Link
-            href="/customers"
-            className={linkClass('/customers')}
+            href="/users"
+            className={linkClass('/users')}
           >
             <Users2 className="h-5 w-5" />
-            <span className="sr-only">Customers</span>
+            <span className="sr-only">Users</span>
           </Link>
         </TooltipTrigger>
         <TooltipContent side="right">Clientes</TooltipContent>

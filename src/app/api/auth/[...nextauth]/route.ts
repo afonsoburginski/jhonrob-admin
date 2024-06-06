@@ -22,7 +22,7 @@ const authOptions: NextAuthOptions = {
         if (response.status !== 200) {
           throw new Error("Invalid login or senha");
         }
-        const userResponse = await axios.get<{ nome: string; login: string }[]>(`${process.env.NEXT_PUBLIC_API_URL}/usuarios`, {
+        const userResponse = await axios.get<{ nome: string; login: string; role: string }[]>(`${process.env.NEXT_PUBLIC_API_URL}/usuarios`, {
           headers: {
             'Authorization': `Bearer ${response.data.token}`
           }
@@ -34,14 +34,26 @@ const authOptions: NextAuthOptions = {
         if (!user) {
           throw new Error("Failed to fetch user");
         }
-        console.log(user);
-        return { id: user.login, name: user.nome, email: user.login, image: null } as User;
+        return { id: user.login, name: user.nome, email: user.login, role: user.role, image: null } as User;
       },
     }),
   ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user.role = token.role;
+      }
+      return session;
+    },
+  },
 };
 
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
-
