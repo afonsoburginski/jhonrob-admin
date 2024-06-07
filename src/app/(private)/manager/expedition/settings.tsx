@@ -34,6 +34,7 @@ interface Item {
   quantidadeEnviada: number | null;
   descricaoProdutoPrimeiroNivel?: string;
   codigoProdutoPrimeiroNivel?: string;
+  caminhoDesenho?: string;
 }
 
 interface DocumentData {
@@ -142,21 +143,56 @@ export default function Settings() {
       const selectedDocument = selectedOption.value;
       setSelectedDocument(selectedDocument);
       setSelectedData((prevData: any) => ({ ...prevData, documentData: selectedDocument }));
-      
+
       axios.get<Item[]>(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocument.documento}&item=${selectedDocument.item}`)
         .then(response => {
           const items = response.data.map(item => ({
             ...item,
-            quantidadeEnviada: 0 // Inicializa a quantidadeEnviada com 0
+            quantidadeEnviada: 0
           }));
-          setShipmentItems(items);
-          setShipmentData(items);
-          setSelectedData((prevData: any) => ({ ...prevData, shipmentData: items }));
+
+          const fetchDrawingPaths = items.map(item =>
+            axios.get(`http://192.168.1.104:8089/api/v1/desenhos-produto/${item.codigoProduto}/caminho-desenho`)
+              .then(response => {
+                console.log(`Resposta completa da API para o produto ${item.codigoProduto}:`, response.data);
+                const caminhoDesenho = response.data.caminhoDesenho;
+                console.log(`Desenho carregado para o produto ${item.codigoProduto}:`, caminhoDesenho);
+                return {
+                  ...item,
+                  caminhoDesenho: caminhoDesenho
+                };
+              })
+              .catch(error => {
+                console.error(`Erro ao carregar caminho do desenho para o produto ${item.codigoProduto}:`, error);
+                return { ...item, caminhoDesenho: '' };
+              })
+          );
+
+          Promise.all(fetchDrawingPaths)
+            .then(itemsWithDrawingPaths => {
+              setShipmentItems(itemsWithDrawingPaths);
+              setShipmentData(itemsWithDrawingPaths);
+              setSelectedData((prevData: any) => ({ ...prevData, shipmentData: itemsWithDrawingPaths }));
+            });
         })
         .catch(error => {
           console.error('Erro ao carregar itens de embarque:', error);
           setErrorMessages(prev => ({ ...prev, shipmentItems: 'Erro ao carregar itens de embarque' }));
         });
+    }
+  };
+
+  const openDrawing = (caminhoDesenho: string) => {
+    console.log("Caminho do desenho a ser aberto:", caminhoDesenho);
+    if (caminhoDesenho) {
+      window.open(`http://192.168.1.104:8089/api/v1/desenhos-produto/download?path=${caminhoDesenho}`, '_blank');
+    } else {
+      toast({
+        title: "Erro",
+        description: "Caminho do desenho não encontrado.",
+        duration: 3000,
+        variant: "destructive",
+      });
     }
   };
 
@@ -198,7 +234,7 @@ export default function Settings() {
               )}
             />
           </div>
-          <div className="grid gap-3 max-w-[795px]">
+          <div className="grid gap-3 max-w-[795px] ">
             <Label htmlFor="product">Itens de Embarque</Label>
             <GroupedMultiSelect
               shipmentItems={shipmentItems}
@@ -235,83 +271,86 @@ export default function Settings() {
               </CardHeader>
               <CardContent className="overflow-auto max-h-[47vh] min-h-[47vh]">
               <Table className="w-full">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Código</TableHead>
-                    <TableHead>Produto</TableHead>
-                    <TableHead>Qtd</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody className="border">
-                  {Object.entries(groupedData).map(([descricaoProdutoPrimeiroNivel, group], groupIndex) => {
-                    const codigoProdutoPrimeiroNivel = group.length > 0 ? group[0].codigoProdutoPrimeiroNivel : ''; // Obtém o código do produto do primeiro item do grupo
-                    return (
-                      <React.Fragment key={groupIndex}>
-                        <TableRow className="bg-gray-200">
-                          <TableHead colSpan={3} className="text-start text-xs font-bold h-6">
-                            <div className="w-[37rem] truncate">
-                              ({codigoProdutoPrimeiroNivel}) {descricaoProdutoPrimeiroNivel}
-                            </div>
-                          </TableHead>
-                        </TableRow>
-                        {group.map((item, index) => {
-                          return (
-                            <TableRow key={index}>
-                              <TableCell className="text-xs py-1 w-1/5">{item.codigoProduto}</TableCell>
-                              <TableCell className="text-xs py-1 w-96">{item.descricaoProduto}</TableCell>
-                              <TableCell className="text-xs py-1 w-1/5">
-                                <Input
-                                  className="h-5 text-xs"
-                                  id={`quantity-${item.codigoProduto}`}
-                                  type="number"
-                                  value={item.quantidadeEnviada !== null ? item.quantidadeEnviada : 0}
-                                  max={item.quantidade}
-                                  step="1"
-                                  onKeyPress={(e) => {
-                                    if (e.key === 'Enter') e.preventDefault();
-                                  }}
-                                  onChange={(e) => {
-                                    let newQuantity = parseInt(e.target.value);
-                                    if (newQuantity > item.quantidade) {
-                                      setErrorMessages(prev => ({ ...prev, [item.codigoProduto]: 'Valor excedido' }));
-                                      newQuantity = item.quantidade;
-                                    } else {
-                                      setErrorMessages(prev => {
-                                        const { [item.codigoProduto]: _, ...rest } = prev;
-                                        return rest;
-                                      });
-                                    }
-                                    if (newQuantity < 0) {
-                                      newQuantity = 0;
-                                    }
-                                    const updatedShipmentData = shipmentData.map((shipmentItem: { codigoProduto: string; }) => {
-                                      if (shipmentItem.codigoProduto === item.codigoProduto) {
-                                        return { ...shipmentItem, quantidadeEnviada: newQuantity };
-                                      }
-                                      return shipmentItem;
-                                    });
-                                    setShipmentData(updatedShipmentData);
-                                    setSelectedData((prevData: any) => ({
-                                      ...prevData,
-                                      shipmentData: updatedShipmentData,
-                                    }));
-                                  }}
-                                />
-                                {errorMessages[item.codigoProduto] && <span className="text-red-500">{errorMessages[item.codigoProduto]}</span>}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </React.Fragment>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Código</TableHead>
+          <TableHead>Produto</TableHead>
+          <TableHead>Qtd</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody className="border">
+        {Object.entries(groupedData).map(([descricaoProdutoPrimeiroNivel, group], groupIndex) => {
+          const codigoProdutoPrimeiroNivel = group.length > 0 ? group[0].codigoProdutoPrimeiroNivel : '';
+          return (
+            <React.Fragment key={groupIndex}>
+              <TableRow className="bg-gray-200">
+                <TableHead colSpan={3} className="text-start text-xs font-bold h-6">
+                  <div className="w-[37rem] truncate">
+                    ({codigoProdutoPrimeiroNivel}) {descricaoProdutoPrimeiroNivel}
+                  </div>
+                </TableHead>
+              </TableRow>
+              {group.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell
+                    className="text-xs py-1 w-1/5 cursor-pointer"
+                    onClick={() => openDrawing(item.caminhoDesenho)}
+                  >
+                    {item.codigoProduto}
+                  </TableCell>
+                  <TableCell className="text-xs py-1 w-96">{item.descricaoProduto}</TableCell>
+                  <TableCell className="text-xs py-1 w-1/5">
+                    <Input
+                      className="h-5 text-xs"
+                      id={`quantity-${item.codigoProduto}`}
+                      type="number"
+                      value={item.quantidadeEnviada !== null ? item.quantidadeEnviada : 0}
+                      max={item.quantidade}
+                      step="1"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') e.preventDefault();
+                      }}
+                      onChange={(e) => {
+                        let newQuantity = parseInt(e.target.value);
+                        if (newQuantity > item.quantidade) {
+                          setErrorMessages(prev => ({ ...prev, [item.codigoProduto]: 'Valor excedido' }));
+                          newQuantity = item.quantidade;
+                        } else {
+                          setErrorMessages(prev => {
+                            const { [item.codigoProduto]: _, ...rest } = prev;
+                            return rest;
+                          });
+                        }
+                        if (newQuantity < 0) {
+                          newQuantity = 0;
+                        }
+                        const updatedShipmentData = shipmentData.map((shipmentItem: { codigoProduto: string; }) => {
+                          if (shipmentItem.codigoProduto === item.codigoProduto) {
+                            return { ...shipmentItem, quantidadeEnviada: newQuantity };
+                          }
+                          return shipmentItem;
+                        });
+                        setShipmentData(updatedShipmentData);
+                        setSelectedData((prevData: any) => ({
+                          ...prevData,
+                          shipmentData: updatedShipmentData,
+                        }));
+                      }}
+                    />
+                    {errorMessages[item.codigoProduto] && <span className="text-red-500">{errorMessages[item.codigoProduto]}</span>}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </React.Fragment>
+          );
+        })}
+      </TableBody>
+    </Table>
               </CardContent>
               <CardFooter className="justify-center border-t p-1">
                 <Button
                   size="sm"
-                  variant="ghost"
+                  variant="default"
                   className="gap-1"
                   onClick={(event) => {
                     event.preventDefault();

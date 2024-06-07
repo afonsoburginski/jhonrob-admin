@@ -48,28 +48,21 @@ export default function Expedition() {
     }
   };
 
-  const openFileInAutoCAD = async () => {
-    const filePath = '/api/download'; // API route for downloading
-  
+  const downloadFile = async () => {
     try {
-      const response = await fetch(filePath);
-      if (!response.ok) {
-        throw new Error('Error downloading file');
-      }
-  
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-  
+      const response = await axios.get('http://192.168.1.104:8089/api/v1/desenhos-produto/210004007/caminho-desenho', {
+        responseType: 'blob' // Definir o tipo de resposta como blob para download de arquivo
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.download = '010000006_00.dwg';
+      link.setAttribute('download', 'nome-do-arquivo.dwf'); // Defina o nome do arquivo que deseja baixar aqui
+      document.body.appendChild(link);
       link.click();
     } catch (error) {
-      console.error(error);
-      alert('Error opening file');
+      console.error('Erro ao baixar o arquivo:', error);
     }
   };
-  
   
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
@@ -78,7 +71,7 @@ export default function Expedition() {
           <Tabs defaultValue="boarding">
             <div className="flex items-center justify-between">
               <TabsList>
-              <TabsTrigger value="boarding">Embarque</TabsTrigger>
+                <TabsTrigger value="boarding">Embarque</TabsTrigger>
                 <TabsTrigger value="expedition">Expedição</TabsTrigger>
               </TabsList>
             </div>
@@ -104,7 +97,7 @@ export default function Expedition() {
                     <CardDescription>
                       Lista de itens enviados para expedição
                     </CardDescription>
-                    <Button size="default" variant="outline" className="h-6" onClick={openFileInAutoCAD}>
+                    <Button size="default" variant="outline" className="h-6" onClick={downloadFile}>
                       Download
                     </Button>
                   </div>
