@@ -182,20 +182,28 @@ export default function Settings() {
     }
   };
 
-  const openDrawing = (caminhoDesenho: string) => {
-    console.log("Caminho do desenho a ser aberto:", caminhoDesenho);
-    if (caminhoDesenho) {
-      window.open(`http://192.168.1.104:8089/api/v1/desenhos-produto/download?path=${caminhoDesenho}`, '_blank');
-    } else {
-      toast({
-        title: "Erro",
-        description: "Caminho do desenho não encontrado.",
-        duration: 3000,
-        variant: "destructive",
+  const downloadDrawing = async (codigoProduto, event) => {
+    if (!codigoProduto) return; // Se não houver código de produto, não faz nada
+  
+    event.preventDefault(); // Evita o comportamento padrão do botão de enviar formulário
+  
+    try {
+      const response = await axios.get(`http://192.168.1.104:8089/api/v1/desenhos-produto/${codigoProduto}/caminho-desenho`, {
+        responseType: 'blob'
       });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const fileName = `${codigoProduto}.dwf`;
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error('Erro ao baixar o arquivo:', error);
     }
   };
-
+  
+  
   const validateQuantities = () => {
     for (const item of shipmentData) {
       if (item.quantidadeEnviada === 0 || item.quantidadeEnviada === null) {
@@ -234,7 +242,7 @@ export default function Settings() {
               )}
             />
           </div>
-          <div className="grid gap-3 max-w-[795px] ">
+          {/* <div className="grid gap-3 max-w-[795px] ">
             <Label htmlFor="product">Itens de Embarque</Label>
             <GroupedMultiSelect
               shipmentItems={shipmentItems}
@@ -248,7 +256,7 @@ export default function Settings() {
                 console.log("Dados enviados para DataContext: ", selectedData);
               }}
             />
-          </div>
+          </div> */}
         </fieldset>
         <fieldset className="grid gap-6 rounded-lg border p-4">
           <legend className="-ml-1 px-1 text-sm font-medium">Dados da OF</legend>
@@ -270,82 +278,79 @@ export default function Settings() {
                 </div>
               </CardHeader>
               <CardContent className="overflow-auto max-h-[47vh] min-h-[47vh]">
-              <Table className="w-full">
-      <TableHeader>
-        <TableRow>
-          <TableHead>Código</TableHead>
-          <TableHead>Produto</TableHead>
-          <TableHead>Qtd</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody className="border">
-        {Object.entries(groupedData).map(([descricaoProdutoPrimeiroNivel, group], groupIndex) => {
-          const codigoProdutoPrimeiroNivel = group.length > 0 ? group[0].codigoProdutoPrimeiroNivel : '';
-          return (
-            <React.Fragment key={groupIndex}>
-              <TableRow className="bg-gray-200">
-                <TableHead colSpan={3} className="text-start text-xs font-bold h-6">
-                  <div className="w-[37rem] truncate">
-                    ({codigoProdutoPrimeiroNivel}) {descricaoProdutoPrimeiroNivel}
-                  </div>
-                </TableHead>
-              </TableRow>
-              {group.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell
-                    className="text-xs py-1 w-1/5 cursor-pointer"
-                    onClick={() => openDrawing(item.caminhoDesenho)}
-                  >
-                    {item.codigoProduto}
-                  </TableCell>
-                  <TableCell className="text-xs py-1 w-96">{item.descricaoProduto}</TableCell>
-                  <TableCell className="text-xs py-1 w-1/5">
-                    <Input
-                      className="h-5 text-xs"
-                      id={`quantity-${item.codigoProduto}`}
-                      type="number"
-                      value={item.quantidadeEnviada !== null ? item.quantidadeEnviada : 0}
-                      max={item.quantidade}
-                      step="1"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') e.preventDefault();
-                      }}
-                      onChange={(e) => {
-                        let newQuantity = parseInt(e.target.value);
-                        if (newQuantity > item.quantidade) {
-                          setErrorMessages(prev => ({ ...prev, [item.codigoProduto]: 'Valor excedido' }));
-                          newQuantity = item.quantidade;
-                        } else {
-                          setErrorMessages(prev => {
-                            const { [item.codigoProduto]: _, ...rest } = prev;
-                            return rest;
-                          });
-                        }
-                        if (newQuantity < 0) {
-                          newQuantity = 0;
-                        }
-                        const updatedShipmentData = shipmentData.map((shipmentItem: { codigoProduto: string; }) => {
-                          if (shipmentItem.codigoProduto === item.codigoProduto) {
-                            return { ...shipmentItem, quantidadeEnviada: newQuantity };
-                          }
-                          return shipmentItem;
-                        });
-                        setShipmentData(updatedShipmentData);
-                        setSelectedData((prevData: any) => ({
-                          ...prevData,
-                          shipmentData: updatedShipmentData,
-                        }));
-                      }}
-                    />
-                    {errorMessages[item.codigoProduto] && <span className="text-red-500">{errorMessages[item.codigoProduto]}</span>}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </React.Fragment>
-          );
-        })}
-      </TableBody>
-    </Table>
+                <Table className="w-full">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Código</TableHead>
+                      <TableHead>Produto</TableHead>
+                      <TableHead>Qtd</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody className="border">
+                    {Object.entries(groupedData).map(([descricaoProdutoPrimeiroNivel, group], groupIndex) => {
+                      const codigoProdutoPrimeiroNivel = group.length > 0 ? group[0].codigoProdutoPrimeiroNivel : '';
+                      return (
+                        <React.Fragment key={groupIndex}>
+                          <TableRow className="bg-gray-200">
+                            <TableHead colSpan={3} className="text-start text-xs font-bold h-6">
+                              <div className="w-[37rem] truncate">
+                                ({codigoProdutoPrimeiroNivel}) {descricaoProdutoPrimeiroNivel}
+                              </div>
+                            </TableHead>
+                          </TableRow>
+                          {group.map((item, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="text-xs py-1 w-1/5 cursor-pointer" onClick={(event) => downloadDrawing(item.codigoProduto, event)}>
+                                {item.codigoProduto}
+                              </TableCell>
+                              <TableCell className="text-xs py-1 w-96">{item.descricaoProduto}</TableCell>
+                              <TableCell className="text-xs py-1 w-1/5">
+                                <Input
+                                  className="h-5 text-xs"
+                                  id={`quantity-${item.codigoProduto}`}
+                                  type="number"
+                                  value={item.quantidadeEnviada !== null ? item.quantidadeEnviada : 0}
+                                  max={item.quantidade}
+                                  step="1"
+                                  onKeyPress={(e) => {
+                                    if (e.key === 'Enter') e.preventDefault();
+                                  }}
+                                  onChange={(e) => {
+                                    let newQuantity = parseInt(e.target.value);
+                                    if (newQuantity > item.quantidade) {
+                                      setErrorMessages(prev => ({ ...prev, [item.codigoProduto]: 'Valor excedido' }));
+                                      newQuantity = item.quantidade;
+                                    } else {
+                                      setErrorMessages(prev => {
+                                        const { [item.codigoProduto]: _, ...rest } = prev;
+                                        return rest;
+                                      });
+                                    }
+                                    if (newQuantity < 0) {
+                                      newQuantity = 0;
+                                    }
+                                    const updatedShipmentData = shipmentData.map((shipmentItem: { codigoProduto: string; }) => {
+                                      if (shipmentItem.codigoProduto === item.codigoProduto) {
+                                        return { ...shipmentItem, quantidadeEnviada: newQuantity };
+                                      }
+                                      return shipmentItem;
+                                    });
+                                    setShipmentData(updatedShipmentData);
+                                    setSelectedData((prevData: any) => ({
+                                      ...prevData,
+                                      shipmentData: updatedShipmentData,
+                                    }));
+                                  }}
+                                />
+                                {errorMessages[item.codigoProduto] && <span className="text-red-500">{errorMessages[item.codigoProduto]}</span>}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </React.Fragment>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
               </CardContent>
               <CardFooter className="justify-center border-t p-1">
                 <Button

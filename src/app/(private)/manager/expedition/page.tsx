@@ -50,13 +50,15 @@ export default function Expedition() {
 
   const downloadFile = async () => {
     try {
-      const response = await axios.get('http://192.168.1.104:8089/api/v1/desenhos-produto/210004007/caminho-desenho', {
-        responseType: 'blob' // Definir o tipo de resposta como blob para download de arquivo
+      const codigo = '210004007';
+      const response = await axios.get(`http://192.168.1.104:8089/api/v1/desenhos-produto/${codigo}/caminho-desenho`, {
+        responseType: 'blob'
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
+      const fileName = `${codigo}.dwf`;
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'nome-do-arquivo.dwf'); // Defina o nome do arquivo que deseja baixar aqui
+      link.setAttribute('download', fileName);
       document.body.appendChild(link);
       link.click();
     } catch (error) {
