@@ -157,16 +157,17 @@ export default function Settings() {
                 console.log(`Resposta completa da API para o produto ${item.codigoProduto}:`, response.data);
                 const caminhoDesenho = response.data.caminhoDesenho;
                 console.log(`Desenho carregado para o produto ${item.codigoProduto}:`, caminhoDesenho);
-                const newItem = { ...item, caminhoDesenho: caminhoDesenho };
-                return newItem;
+                return {
+                  ...item,
+                  caminhoDesenho: caminhoDesenho
+                };
               })
               .catch(error => {
                 console.error(`Erro ao carregar caminho do desenho para o produto ${item.codigoProduto}:`, error);
-                const newItem = { ...item, caminhoDesenho: '' };
-                return newItem;
+                return { ...item, caminhoDesenho: '' };
               })
           );
-          
+
           Promise.all(fetchDrawingPaths)
             .then(itemsWithDrawingPaths => {
               setShipmentItems(itemsWithDrawingPaths);
@@ -240,6 +241,21 @@ export default function Settings() {
               )}
             />
           </div>
+          {/* <div className="grid gap-3 max-w-[795px] ">
+            <Label htmlFor="product">Itens de Embarque</Label>
+            <GroupedMultiSelect
+              shipmentItems={shipmentItems}
+              placeholder="Selecione os Items"
+              value={Array.isArray(shipmentData) ? shipmentData.map(data => ({ value: data.codigoProduto, label: data.codigoProduto })) : []}
+              onChange={(selectedOptions: any[]) => {
+                const selectedCodes = selectedOptions.map((option: { value: any; }) => option.value);
+                const selectedData = shipmentItems.filter(item => selectedCodes.includes(item.codigoProduto));
+                setShipmentData(selectedData);
+                setSelectedData((prevData: any) => ({ ...prevData, shipmentData: selectedData }));
+                console.log("Dados enviados para DataContext: ", selectedData);
+              }}
+            />
+          </div> */}
         </fieldset>
         <fieldset className="grid gap-6 rounded-lg border p-4">
           <legend className="-ml-1 px-1 text-sm font-medium">Dados da OF</legend>
