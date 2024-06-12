@@ -260,7 +260,7 @@ export default function Settings() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="overflow-auto max-h-[47vh] min-h-[47vh]">
+              <CardContent className="overflow-auto max-h-[60vh] min-h-[60vh]">
                 <Table className="w-full">
                   <TableHeader>
                     <TableRow>

@@ -26,6 +26,7 @@ import {
   PaginationContent,
   PaginationItem,
 } from "@/components/ui/pagination"
+
 interface ShipmentData {
   peso?: string;
   quantidade?: string;
@@ -38,9 +39,8 @@ interface ShipmentData {
 export default function Romaneio() {
   const { documentData, shipmentData } = useContext(DataContext);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  const itemsPerPage = 16;
   const totalItems = shipmentData.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   const totalWeight = shipmentData?.reduce((total: number, item: ShipmentData) => total + (item?.peso ? parseFloat(item.peso) : 0), 0);
   const totalQuantity = shipmentData?.reduce((total: number, item: ShipmentData) => total + (item?.quantidade ? parseFloat(item.quantidade) : 0), 0);
@@ -55,6 +55,39 @@ export default function Romaneio() {
     }, {});
   }
 
+const createPaginatedData = (groupedData: { [key: string]: ShipmentData[] }, itemsPerPage: number) => {
+  const pages: { [key: string]: ShipmentData[] }[] = [];
+  let currentPage: { [key: string]: ShipmentData[] } = {};
+  let currentItemCount = 0;
+
+  // Ordena as chaves
+  const sortedKeys = Object.keys(groupedData).sort((a, b) => parseInt(a) - parseInt(b));
+
+  sortedKeys.forEach((key) => {
+    const items = groupedData[key];
+    items.forEach(item => {
+      if (currentItemCount === itemsPerPage) {
+        pages.push(currentPage);
+        currentPage = {};
+        currentItemCount = 0;
+      }
+      currentPage[key] = currentPage[key] || [];
+      currentPage[key].push(item);
+      currentItemCount++;
+    });
+  });
+
+  if (Object.keys(currentPage).length > 0) {
+    pages.push(currentPage);
+  }
+
+  return pages;
+};
+
+  
+  const paginatedData = createPaginatedData(groupedShipmentData, itemsPerPage);
+  const totalPages = paginatedData.length;
+
   const handlePrevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
@@ -67,7 +100,7 @@ export default function Romaneio() {
     }
   };
 
-  const currentData = shipmentData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentGroupedData = paginatedData[currentPage - 1] || {};
 
   return (
     <Card x-chunk="dashboard-06-chunk-1" className="w-[900px] min-h-[105vh] max-h-[105vh] p-6">
@@ -126,7 +159,7 @@ export default function Romaneio() {
           <TableRow>
             <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-1.5" />
           </TableRow>
-          {Object.entries(groupBy(currentData, 'codigoProdutoPrimeiroNivel')).map(([codigoProdutoPrimeiroNivel, group], groupIndex) => {
+          {Object.entries(currentGroupedData).map(([codigoProdutoPrimeiroNivel, group], groupIndex) => {
             const descricaoProdutoPrimeiroNivel = group[0].descricaoProdutoPrimeiroNivel;
             return (
               <React.Fragment key={groupIndex}>
