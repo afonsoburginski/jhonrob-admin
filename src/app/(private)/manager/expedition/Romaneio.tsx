@@ -150,7 +150,7 @@ export default function Romaneio() {
                         ? item.medidas.split('x').map((num: string) => parseFloat(num).toFixed(2)).join('x')
                         : '-'}
                     </TableCell>
-                    <TableCell className="text-xs text-right py-1 px-1">{item?.peso ?? '-'}</TableCell>
+                    <TableCell className="text-xs text-right py-1 px-1">{item?.peso ? parseFloat(item.peso).toFixed(2) : '-'}</TableCell>
                   </TableRow>
                 ))}
               </React.Fragment>
