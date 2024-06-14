@@ -26,8 +26,10 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast";
+import { useSession } from "next-auth/react";
 
 interface Item {
+  local: string;
   codigoProduto: string;
   descricaoProduto: string;
   quantidade: number;
@@ -65,6 +67,7 @@ export default function Settings() {
   const [documents, setDocuments] = useState<DocumentData[]>([]);
   const [shipmentItems, setShipmentItems] = useState<Item[]>([]);
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string }>({});
+  const { data: session } = useSession();
 
   function groupByFirstLevelProduct(data: Item[]): { [key: string]: Item[] } {
     return data.reduce((groups, item) => {
@@ -166,12 +169,20 @@ export default function Settings() {
                 return newItem;
               })
           );
-          
+
           Promise.all(fetchDrawingPaths)
             .then(itemsWithDrawingPaths => {
-              setShipmentItems(itemsWithDrawingPaths);
-              setShipmentData(itemsWithDrawingPaths);
-              setSelectedData((prevData: any) => ({ ...prevData, shipmentData: itemsWithDrawingPaths }));
+              const filteredItems = itemsWithDrawingPaths.filter(item => {
+                if (session?.user?.role === "Exp") {
+                  return item.local === "E";
+                } else if (session?.user?.role === "Amp") {
+                  return item.local === "A";
+                }
+                return false;
+              });
+              setShipmentItems(filteredItems);
+              setShipmentData(filteredItems);
+              setSelectedData((prevData: any) => ({ ...prevData, shipmentData: filteredItems }));
             });
         })
         .catch(error => {
@@ -180,6 +191,7 @@ export default function Settings() {
         });
     }
   };
+
 
   const downloadDrawing = async (codigoProduto, event) => {
     if (!codigoProduto) return;

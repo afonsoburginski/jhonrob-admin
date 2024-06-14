@@ -39,7 +39,7 @@ interface ShipmentData {
 export default function Romaneio() {
   const { documentData, shipmentData } = useContext(DataContext);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 16;
+  const itemsPerPage = 15;
   const totalItems = shipmentData.length;
 
   const totalWeight = shipmentData?.reduce((total: number, item: ShipmentData) => total + (item?.peso ? parseFloat(item.peso) : 0), 0);
@@ -60,7 +60,6 @@ const createPaginatedData = (groupedData: { [key: string]: ShipmentData[] }, ite
   let currentPage: { [key: string]: ShipmentData[] } = {};
   let currentItemCount = 0;
 
-  // Ordena as chaves
   const sortedKeys = Object.keys(groupedData).sort((a, b) => parseInt(a) - parseInt(b));
 
   sortedKeys.forEach((key) => {
@@ -83,7 +82,6 @@ const createPaginatedData = (groupedData: { [key: string]: ShipmentData[] }, ite
 
   return pages;
 };
-
   
   const paginatedData = createPaginatedData(groupedShipmentData, itemsPerPage);
   const totalPages = paginatedData.length;
