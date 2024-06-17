@@ -33,6 +33,7 @@ interface ShipmentData {
   quantidadeEnviada?: string;
   codigoProdutoPrimeiroNivel?: string;
   descricaoProdutoPrimeiroNivel?: string;
+  local?: string;
   [key: string]: any;
 }
 
@@ -55,34 +56,40 @@ export default function Romaneio() {
     }, {});
   }
 
-const createPaginatedData = (groupedData: { [key: string]: ShipmentData[] }, itemsPerPage: number) => {
-  const pages: { [key: string]: ShipmentData[] }[] = [];
-  let currentPage: { [key: string]: ShipmentData[] } = {};
-  let currentItemCount = 0;
+  const createPaginatedData = (groupedData: { [key: string]: ShipmentData[] }, itemsPerPage: number) => {
+    const pages: { [key: string]: ShipmentData[] }[] = [];
+    let currentPage: { [key: string]: ShipmentData[] } = {};
+    let currentItemCount = 0;
 
-  const sortedKeys = Object.keys(groupedData).sort((a, b) => parseInt(a) - parseInt(b));
+    const sortedKeys = Object.keys(groupedData).sort((a, b) => parseInt(a) - parseInt(b));
 
-  sortedKeys.forEach((key) => {
-    const items = groupedData[key];
-    items.forEach(item => {
-      if (currentItemCount === itemsPerPage) {
-        pages.push(currentPage);
-        currentPage = {};
-        currentItemCount = 0;
-      }
-      currentPage[key] = currentPage[key] || [];
-      currentPage[key].push(item);
-      currentItemCount++;
+    sortedKeys.forEach((key) => {
+      const items = groupedData[key];
+      items.forEach(item => {
+        if (currentItemCount === itemsPerPage) {
+          pages.push(currentPage);
+          currentPage = {};
+          currentItemCount = 0;
+        }
+        currentPage[key] = currentPage[key] || [];
+        currentPage[key].push(item);
+        currentItemCount++;
+      });
     });
-  });
 
-  if (Object.keys(currentPage).length > 0) {
-    pages.push(currentPage);
-  }
+    if (Object.keys(currentPage).length > 0) {
+      pages.push(currentPage);
+    }
 
-  return pages;
-};
-  
+    return pages;
+  };
+
+  const getLocalLabel = (local: string) => {
+    if (local === 'A') return 'Almoxarifado';
+    if (local === 'E') return 'Expedição';
+    return '';
+  };
+
   const paginatedData = createPaginatedData(groupedShipmentData, itemsPerPage);
   const totalPages = paginatedData.length;
 
@@ -152,7 +159,7 @@ const createPaginatedData = (groupedData: { [key: string]: ShipmentData[] }, ite
         </TableHeader>
         <TableBody>
           <TableRow className="bg-gray-200">
-            <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-6">Local: Expedição</TableHead>
+            <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-6">Local: {getLocalLabel(shipmentData[0]?.local)}</TableHead>
           </TableRow>
           <TableRow>
             <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-1.5" />
