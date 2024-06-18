@@ -47,24 +47,6 @@ export default function Expedition() {
       setCurrentPage(currentPage + 1);
     }
   };
-
-  const downloadFile = async () => {
-    try {
-      const codigo = '210004007';
-      const response = await axios.get(`http://192.168.1.104:8089/api/v1/desenhos-produto/${codigo}/caminho-desenho`, {
-        responseType: 'blob'
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const fileName = `${codigo}.dwf`;
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-    } catch (error) {
-      console.error('Erro ao baixar o arquivo:', error);
-    }
-  };
   
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
@@ -99,8 +81,8 @@ export default function Expedition() {
                     <CardDescription>
                       Lista de itens enviados para expedição
                     </CardDescription>
-                    <Button size="default" variant="outline" className="h-6" onClick={downloadFile}>
-                      Download
+                    <Button size="default" variant="outline" className="h-6">
+                      Gerar
                     </Button>
                   </div>
                 </CardHeader>

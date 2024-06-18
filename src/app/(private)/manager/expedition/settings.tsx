@@ -60,6 +60,17 @@ interface SelectedDocument {
   } | null;
 }
 
+interface Produto {
+  codigoProduto: string;
+}
+declare module "next-auth" {
+  interface Session {
+    user: {
+      role?: string;
+    };
+  }
+}
+
 export default function Settings() {
   const { documentData, setSelectedData, shipmentData, setShipmentData, selectedDocument, setSelectedDocument } = useContext(DataContext);
   const { saveData } = useContext(ExpeditionContext);
@@ -69,11 +80,22 @@ export default function Settings() {
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string }>({});
   const { data: session } = useSession();
 
+  function sortNumeric(a: string, b: string) {
+    return parseInt(a, 10) - parseInt(b, 10);
+  }
+
   function groupByFirstLevelProduct(data: Item[]): { [key: string]: Item[] } {
-    return data.reduce((groups, item) => {
-      const group = (groups[item.descricaoProdutoPrimeiroNivel || ''] || []);
+    const grouped = data.reduce((groups, item) => {
+      const group = (groups[item.codigoProdutoPrimeiroNivel || ''] || []);
       group.push(item);
-      return { ...groups, [item.descricaoProdutoPrimeiroNivel || '']: group };
+      return { ...groups, [item.codigoProdutoPrimeiroNivel || '']: group };
+    }, {} as { [key: string]: Item[] });
+
+    const sortedKeys = Object.keys(grouped).sort(sortNumeric);
+
+    return sortedKeys.reduce((sortedGrouped, key) => {
+      sortedGrouped[key] = grouped[key];
+      return sortedGrouped;
     }, {} as { [key: string]: Item[] });
   }
 
@@ -193,7 +215,7 @@ export default function Settings() {
   };
 
 
-  const downloadDrawing = async (codigoProduto, event) => {
+  const downloadDrawing = async (codigoProduto: string, event: React.MouseEvent<HTMLTableCellElement, MouseEvent>) => {
     if (!codigoProduto) return;
   
     event.preventDefault();
@@ -213,6 +235,7 @@ export default function Settings() {
       console.error('Erro ao baixar o arquivo:', error);
     }
   };
+  
 
   const validateQuantities = () => {
     for (const item of shipmentData) {
@@ -252,6 +275,21 @@ export default function Settings() {
               )}
             />
           </div>
+          {/* <div className="grid gap-3 max-w-[795px] ">
+            <Label htmlFor="product">Itens de Embarque</Label>
+            <GroupedMultiSelect
+              shipmentItems={shipmentItems}
+              placeholder="Selecione os Items"
+              value={Array.isArray(shipmentData) ? shipmentData.map(data => ({ value: data.codigoProduto, label: data.codigoProduto })) : []}
+              onChange={(selectedOptions: any[]) => {
+                const selectedCodes = selectedOptions.map((option: { value: any; }) => option.value);
+                const selectedData = shipmentItems.filter(item => selectedCodes.includes(item.codigoProduto));
+                setShipmentData(selectedData);
+                setSelectedData((prevData: any) => ({ ...prevData, shipmentData: selectedData }));
+                console.log("Dados enviados para DataContext: ", selectedData);
+              }}
+            />
+          </div> */}
         </fieldset>
         <fieldset className="grid gap-6 rounded-lg border p-4">
           <legend className="-ml-1 px-1 text-sm font-medium">Dados da OF</legend>
@@ -276,14 +314,14 @@ export default function Settings() {
                 <Table className="w-full">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Código</TableHead>
-                      <TableHead>Produto</TableHead>
-                      <TableHead>Qtd</TableHead>
+                      <TableHead className="text-xs h-6">Código</TableHead>
+                      <TableHead className="text-xs h-6">Produto</TableHead>
+                      <TableHead className="text-xs h-6">Qtd</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody className="border">
-                    {Object.entries(groupedData).map(([descricaoProdutoPrimeiroNivel, group], groupIndex) => {
-                      const codigoProdutoPrimeiroNivel = group.length > 0 ? group[0].codigoProdutoPrimeiroNivel : '';
+                    {Object.entries(groupedData).map(([codigoProdutoPrimeiroNivel, group], groupIndex) => {
+                      const descricaoProdutoPrimeiroNivel = group[0].descricaoProdutoPrimeiroNivel;
                       return (
                         <React.Fragment key={groupIndex}>
                           <TableRow className="bg-gray-200">
