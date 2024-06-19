@@ -43,8 +43,8 @@ import { signOut, getSession } from 'next-auth/react';
 import { Session } from 'next-auth';
 
 export default function Header() {
-  const pathname = usePathname()
-  const pathnames = pathname.split('/').filter(x => x)
+  const pathname = usePathname();
+  const pathnames = pathname.split('/').filter(x => x);
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
@@ -93,7 +93,7 @@ export default function Header() {
             className="overflow-hidden rounded-full"
           >
           <Avatar>
-            <AvatarImage src={session?.user?.image || '' } />
+            <AvatarImage src={session?.user?.image || ''} />
             <AvatarFallback>
               {session?.user?.name ? session.user.name.split(' ').map(part => part.charAt(0)).join('') : ''}
             </AvatarFallback>

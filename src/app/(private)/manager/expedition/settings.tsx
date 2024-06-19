@@ -63,13 +63,6 @@ interface SelectedDocument {
 interface Produto {
   codigoProduto: string;
 }
-declare module "next-auth" {
-  interface Session {
-    user: {
-      role?: string;
-    };
-  }
-}
 
 export default function Settings() {
   const { documentData, setSelectedData, shipmentData, setShipmentData, selectedDocument, setSelectedDocument } = useContext(DataContext);
@@ -253,9 +246,9 @@ export default function Settings() {
   };
 
   return (
-    <div className="relative hidden flex-col items-start gap-8 md:flex">
+    <div className="relative hidden flex-col items-start w-56 md:flex">
       <form className="grid w-full items-start gap-6">
-        <fieldset className="grid gap-6 rounded-lg border p-4">
+        <fieldset className="grid gap-6 rounded-lg border p-2">
           <legend className="-ml-1 px-1 text-sm font-medium">Ordens de produção</legend>
           <div className="grid gap-3">
             <AsyncSelect
@@ -275,27 +268,12 @@ export default function Settings() {
               )}
             />
           </div>
-          {/* <div className="grid gap-3 max-w-[795px] ">
-            <Label htmlFor="product">Itens de Embarque</Label>
-            <GroupedMultiSelect
-              shipmentItems={shipmentItems}
-              placeholder="Selecione os Items"
-              value={Array.isArray(shipmentData) ? shipmentData.map(data => ({ value: data.codigoProduto, label: data.codigoProduto })) : []}
-              onChange={(selectedOptions: any[]) => {
-                const selectedCodes = selectedOptions.map((option: { value: any; }) => option.value);
-                const selectedData = shipmentItems.filter(item => selectedCodes.includes(item.codigoProduto));
-                setShipmentData(selectedData);
-                setSelectedData((prevData: any) => ({ ...prevData, shipmentData: selectedData }));
-                console.log("Dados enviados para DataContext: ", selectedData);
-              }}
-            />
-          </div> */}
         </fieldset>
-        <fieldset className="grid gap-6 rounded-lg border p-4">
+        <fieldset className="grid gap-6 rounded-lg border p-2">
           <legend className="-ml-1 px-1 text-sm font-medium">Dados da OF</legend>
           <div className="grid gap-3">
             <Card>
-              <CardHeader>
+              <CardHeader className="py-2">
                 <div className="flex justify-between">
                   <div className="flex flex-col w-1/2">
                     <CardDescription><b>OF:</b> {documentData?.documento}</CardDescription>
@@ -310,7 +288,7 @@ export default function Settings() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="overflow-auto max-h-[60vh] min-h-[60vh]">
+              <CardContent className="overflow-auto max-h-[47vh] min-h-[47vh]">
                 <Table className="w-full">
                   <TableHeader>
                     <TableRow>
@@ -333,7 +311,7 @@ export default function Settings() {
                           </TableRow>
                           {group.map((item, index) => (
                             <TableRow key={index}>
-                              <TableCell className="text-xs py-1 w-1/5 cursor-pointer" onClick={(event) => downloadDrawing(item.codigoProduto, event)}>
+                              <TableCell className="text-xs py-1 w-1/12 cursor-pointer" onClick={(event) => downloadDrawing(item.codigoProduto, event)}>
                                 {item.codigoProduto}
                               </TableCell>
                               <TableCell className="text-xs py-1 w-96">{item.descricaoProduto}</TableCell>
@@ -389,7 +367,7 @@ export default function Settings() {
                 <Button
                   size="sm"
                   variant="default"
-                  className="gap-1"
+                  className="gap-1 w-32"
                   onClick={(event) => {
                     event.preventDefault();
                     if (validateQuantities()) {

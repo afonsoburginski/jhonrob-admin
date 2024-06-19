@@ -39,9 +39,17 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 
+interface Usuario {
+  codigo: string
+  nome: string
+  login: string
+  senha: string
+  role: string
+}
+
 export default function Users() {
-  const [usuarios, setUsuarios] = useState([])
-  const [editRole, setEditRole] = useState({})
+  const [usuarios, setUsuarios] = useState<Usuario[]>([])
+  const [editRole, setEditRole] = useState<{ [codigo: string]: string }>({})
 
   useEffect(() => {
     axios.get("http://192.168.1.104:8089/api/v1/usuarios")
@@ -53,11 +61,11 @@ export default function Users() {
       })
   }, [])
 
-  const handleRoleChange = (codigo, role) => {
+  const handleRoleChange = (codigo: string, role: string) => {
     setEditRole({ ...editRole, [codigo]: role })
   }
 
-  const handleSaveRole = (codigo) => {
+  const handleSaveRole = (codigo: string) => {
     const usuario = usuarios.find(u => u.codigo === codigo)
     if (usuario) {
       axios.patch(`http://192.168.1.104:8089/api/v1/usuarios/${codigo}`, {

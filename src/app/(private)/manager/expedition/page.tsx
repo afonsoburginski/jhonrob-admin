@@ -1,4 +1,4 @@
-// expedition.tsx
+// Page.tsx
 'use client'
 import React, { useState, useContext } from 'react';
 import AsyncSelect from 'react-select/async';
@@ -59,7 +59,7 @@ export default function Expedition() {
                 <TabsTrigger value="expedition">Expedição</TabsTrigger>
               </TabsList>
             </div>
-            <TabsContent value="boarding" className="flex flex-row justify-around gap-8">
+            <TabsContent value="boarding" className="flex flex-row justify-around gap-6">
               <Card x-chunk="dashboard-06-chunk-1" className="flex-grow">
                 <CardHeader>
                   <CardTitle>Embarque</CardTitle>
@@ -67,11 +67,13 @@ export default function Expedition() {
                     Selecione a OF e os itens que serão embarcados
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="overflow-x-auto">
+                <CardContent className="overflow-x-auto w-64">
                   <Settings />
                 </CardContent>
               </Card>
+              <div className="overflow-x-auto h-[80vh]">
               <Romaneio/>
+              </div>
             </TabsContent>
             <TabsContent value="expedition">
               <Card x-chunk="dashboard-06-chunk-1">

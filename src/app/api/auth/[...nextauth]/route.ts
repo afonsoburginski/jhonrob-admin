@@ -1,7 +1,22 @@
 // src/app/api/auth/[...nextauth]/route.ts
-import NextAuth, { type NextAuthOptions, User } from "next-auth";
+import NextAuth, { type NextAuthOptions, User, Session } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from 'axios';
+
+type CustomUser = {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+  role: string; // Assuming role is always present
+};
+
+// Extend the existing User type with an optional role property
+declare module "next-auth" {
+  interface User {
+    role?: string;
+  }
+}
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -34,20 +49,20 @@ const authOptions: NextAuthOptions = {
         if (!user) {
           throw new Error("Failed to fetch user");
         }
-        return { id: user.login, name: user.nome, email: user.login, role: user.role, image: null } as User;
+        return { id: user.login, name: user.nome, email: user.login, role: user.role, image: null } as CustomUser;
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role;
+        token.role = (user as CustomUser).role;
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
-        session.user.role = token.role;
+        session.user.role = (token as { role: string }).role;
       }
       return session;
     },

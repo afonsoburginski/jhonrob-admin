@@ -1,6 +1,6 @@
 // Romaneio.tsx
 'use client'
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import Image from 'next/image';
 import { DataContext } from '@/context/DataProvider';
 import {
@@ -48,6 +48,8 @@ export default function Romaneio() {
   const { documentData, shipmentData } = useContext(DataContext);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 16;
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
   const totalItems = shipmentData.length;
 
   const totalWeight = shipmentData?.reduce((total: number, item: ShipmentData) => total + (item?.peso ? parseFloat(item.peso) : 0), 0);
@@ -72,7 +74,7 @@ export default function Romaneio() {
 
     keys.forEach((key) => {
       const items = groupedData[key];
-      items.forEach(item => {
+      items.forEach((item) => {
         if (currentItemCount === itemsPerPage) {
           pages.push(currentPage);
           currentPage = {};
@@ -91,12 +93,6 @@ export default function Romaneio() {
     return pages;
   };
 
-  const getLocalLabel = (local: string) => {
-    if (local === 'A') return 'Almoxarifado';
-    if (local === 'E') return 'Expedição';
-    return '';
-  };
-
   const paginatedData = createPaginatedData(groupedShipmentData, itemsPerPage);
   const totalPages = paginatedData.length;
 
@@ -112,17 +108,39 @@ export default function Romaneio() {
     }
   };
 
-  useEffect(() => {
-    const updatePage = () => {
-      setCurrentPage(currentPage);
-    };
-    updatePage();
-  }, [currentPage]);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+
+    if (touchStartX - touchEndX > 50) {
+      handleNextPage();
+    }
+
+    if (touchStartX - touchEndX < -50) {
+      handlePrevPage();
+    }
+
+    setTouchStartX(null);
+    setTouchEndX(null);
+  };
 
   const currentGroupedData = paginatedData[currentPage - 1] || {};
 
+  const getLocalLabel = (local: string) => {
+    if (local === 'A') return 'Almoxarifado';
+    if (local === 'E') return 'Expedição';
+    return '';
+  }
+
   return (
-    <Card x-chunk="dashboard-06-chunk-1" className="w-[900px] min-h-[105vh] max-h-[105vh] p-6">
+    <Card x-chunk="dashboard-06-chunk-1" className="w-[900px] min-h-[90vh] max-h-[100vh] p-6">
       <CardHeader className="border-t-2 border-gray-400 p-0 mb-1">
         <div className="flex justify-between items-center h-10">
           <div className='flex flex-col items-start'>
@@ -156,7 +174,7 @@ export default function Romaneio() {
         </div>
       </CardContent>
       <CardDescription className="text-xs font-bold mt-5">{'Status = { P = Pendente, E = Embarcado, C = Cancelado, N = Não Retirado, R = Retirado }'}</CardDescription>
-      <Carousel className="w-full">
+      <Carousel className="w-full" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
         <CarouselContent>
           {paginatedData.map((pageData, pageIndex) => (
             <CarouselItem key={pageIndex}>
@@ -192,7 +210,7 @@ export default function Romaneio() {
                         {group.map((item, index) => (
                           <TableRow key={index}>
                             <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.quantidade ?? '-'}</TableCell>
-                            <TableCell className={`text-xs text-right py-1 px-1 border-r ${item?.quantidadeEnviada ? 'bg-blue-100' : ''}`}>
+                            <TableCell className={`text-xs text-right py-1 px-1 border-r ${item?.quantidadeEnviada ? 'bg-red-500' : ''}`}>
                               {item?.quantidade ? parseFloat(item.quantidade) - parseFloat(item.quantidadeEnviada ?? '0') : '-'}
                             </TableCell>
                             <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.codigoProduto ?? '-'}</TableCell>
@@ -239,14 +257,9 @@ export default function Romaneio() {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious onClick={handlePrevPage} className="cursor-pointer text-blue-500 hover:text-blue-700">Anterior</CarouselPrevious>
-        <CarouselNext onClick={handleNextPage} className="cursor-pointer text-blue-500 hover:text-blue-700">Próxima</CarouselNext>
+        <CarouselPrevious onClick={handlePrevPage}>Previous</CarouselPrevious>
+        <CarouselNext onClick={handleNextPage}>Next</CarouselNext>
       </Carousel>
-      <CardContent className="flex justify-items-start items-center p-0 mt-2">
-        <CardDescription className="text-xs">
-          Página <strong>{currentPage}</strong> de <strong>{totalPages}</strong>
-        </CardDescription>
-      </CardContent>
     </Card>
   );
 }

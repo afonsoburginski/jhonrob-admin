@@ -55,3 +55,21 @@ $ yarn run dev
 ## 📝 Licença
 
 Esse projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE.md) para mais detalhes.
+
+
+
+          {/* <div className="grid gap-3 max-w-[795px] ">
+            <Label htmlFor="product">Itens de Embarque</Label>
+            <GroupedMultiSelect
+              shipmentItems={shipmentItems}
+              placeholder="Selecione os Items"
+              value={Array.isArray(shipmentData) ? shipmentData.map(data => ({ value: data.codigoProduto, label: data.codigoProduto })) : []}
+              onChange={(selectedOptions: any[]) => {
+                const selectedCodes = selectedOptions.map((option: { value: any; }) => option.value);
+                const selectedData = shipmentItems.filter(item => selectedCodes.includes(item.codigoProduto));
+                setShipmentData(selectedData);
+                setSelectedData((prevData: any) => ({ ...prevData, shipmentData: selectedData }));
+                console.log("Dados enviados para DataContext: ", selectedData);
+              }}
+            />
+          </div> */}
