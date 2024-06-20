@@ -50,7 +50,7 @@ export default function Expedition() {
   
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
-      <div className="flex flex-col sm:gap-4 sm:py-4">
+      <div className="flex flex-col sm:gap-4 sm:pt-4 ">
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           <Tabs defaultValue="boarding">
             <div className="flex items-center justify-between">
@@ -67,13 +67,11 @@ export default function Expedition() {
                     Selecione a OF e os itens que serão embarcados
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="overflow-x-auto w-64">
+                <CardContent className="overflow-x-auto">
                   <Settings />
                 </CardContent>
               </Card>
-              <div className="overflow-x-auto h-[80vh]">
-              <Romaneio/>
-              </div>
+                <Romaneio/>
             </TabsContent>
             <TabsContent value="expedition">
               <Card x-chunk="dashboard-06-chunk-1">

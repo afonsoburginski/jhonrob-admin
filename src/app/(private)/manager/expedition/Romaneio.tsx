@@ -140,7 +140,7 @@ export default function Romaneio() {
   }
 
   return (
-    <Card x-chunk="dashboard-06-chunk-1" className="w-[900px] min-h-[90vh] max-h-[100vh] p-6">
+    <Card x-chunk="dashboard-06-chunk-1" className="w-[1000px] min-h-[90vh] max-h-[105vh] p-6 sm:overflow-y-auto sm:max-h-[51rem] sm:min-h-[51rem]">
       <CardHeader className="border-t-2 border-gray-400 p-0 mb-1">
         <div className="flex justify-between items-center h-10">
           <div className='flex flex-col items-start'>
@@ -257,8 +257,8 @@ export default function Romaneio() {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious onClick={handlePrevPage}>Previous</CarouselPrevious>
-        <CarouselNext onClick={handleNextPage}>Next</CarouselNext>
+        <CarouselPrevious className="ml-6 cursor-pointer text-red-500 hover:text-gray-700" onClick={handlePrevPage}>Previous</CarouselPrevious>
+        <CarouselNext className="mr-6 cursor-pointer text-red-500 hover:text-blue-700" onClick={handleNextPage}>Next</CarouselNext>
       </Carousel>
     </Card>
   );

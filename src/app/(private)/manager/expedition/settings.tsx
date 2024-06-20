@@ -246,7 +246,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="relative hidden flex-col items-start w-56 md:flex">
+    <div className="relative hidden flex-col items-start w-full md:flex">
       <form className="grid w-full items-start gap-6">
         <fieldset className="grid gap-6 rounded-lg border p-2">
           <legend className="-ml-1 px-1 text-sm font-medium">Ordens de produção</legend>
