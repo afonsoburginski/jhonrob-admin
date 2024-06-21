@@ -6,9 +6,8 @@ import { DataContext } from '@/context/DataProvider';
 import { ExpeditionContext } from '@/context/ExpeditionProvider';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import GroupedMultiSelect from '@/components/GroupedMultiSelect';
 import AsyncSelect from 'react-select/async';
+import DocumentSelect from '@/components/DocumentSelect';
 import {
   Table,
   TableBody,
@@ -28,49 +27,13 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from "next-auth/react";
 
-interface Item {
-  local: string;
-  codigoProduto: string;
-  descricaoProduto: string;
-  quantidade: number;
-  quantidadeEnviada: number | null;
-  descricaoProdutoPrimeiroNivel?: string;
-  codigoProdutoPrimeiroNivel?: string;
-  caminhoDesenho?: string;
-}
-
-interface DocumentData {
-  documento: string;
-  item: string;
-  pessoa: {
-    codigo: string;
-    descricao: string;
-  };
-  dataCadastro: string;
-  dataPrevEntrega: string;
-  tag: string;
-}
-
-interface SelectedDocument {
-  documento: string;
-  item: string;
-  produto: {
-    codigo: string;
-    descricao: string;
-  } | null;
-}
-
-interface Produto {
-  codigoProduto: string;
-}
-
 export default function Settings() {
-  const { documentData, setSelectedData, shipmentData, setShipmentData, selectedDocument, setSelectedDocument } = useContext(DataContext);
+  const { documentData, shipmentData, setSelectedData, setShipmentData, selectedDocument, setSelectedDocument } = useContext(DataContext);
   const { saveData } = useContext(ExpeditionContext);
   const { toast } = useToast();
-  const [documents, setDocuments] = useState<DocumentData[]>([]);
-  const [shipmentItems, setShipmentItems] = useState<Item[]>([]);
+  const [savedDocuments, setSavedDocuments] = useState<Set<string>>(new Set());
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string }>({});
+
   const { data: session } = useSession();
 
   function sortNumeric(a: string, b: string) {
@@ -94,120 +57,6 @@ export default function Settings() {
 
   const groupedData = useMemo(() => groupByFirstLevelProduct(shipmentData), [shipmentData]);
 
-  useEffect(() => {
-    axios.get<DocumentData[]>('http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=100')
-      .then(response => {
-        setDocuments(response.data);
-      })
-      .catch(error => {
-        console.error('Erro ao carregar documentos:', error);
-        setErrorMessages(prev => ({ ...prev, documents: 'Erro ao carregar documentos' }));
-      });
-  }, []);
-
-  const loadOptions = (inputValue: string, callback: (options: any[]) => void) => {
-    if (inputValue.trim() === "") {
-      callback([]);
-      return;
-    }
-
-    const apiUrl = `http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=100000`;
-
-    axios.get(apiUrl)
-      .then(response => {
-        const data = response.data;
-        const filteredData = data.filter((item: any) =>
-          item.documento.toString().includes(inputValue) ||
-          item.pessoa?.descricao?.toLowerCase().includes(inputValue.toLowerCase()) ||
-          item.produto.descricao.toLowerCase().includes(inputValue.toLowerCase())
-        );
-
-        const limitedData = filteredData.slice(0, 100);
-
-        limitedData.sort((a: any, b: any) => a.item - b.item);
-
-        const groupedOptions = limitedData.reduce((acc: any, item: any) => {
-          const label = `OF:${item.documento} - Cliente: ${item.pessoa?.descricao}`;
-          const existingGroup = acc.find((group: any) => group.label === label);
-
-          if (existingGroup) {
-            existingGroup.options.push({
-              value: item,
-              label: `Item:${item.item} - ${item.produto.codigo} - ${item.produto.descricao}`
-            });
-          } else {
-            acc.push({
-              label,
-              options: [{
-                value: item,
-                label: `Item:${item.item} - ${item.produto.codigo} - ${item.produto.descricao}`
-              }]
-            });
-          }
-
-          return acc;
-        }, []);
-
-        callback(groupedOptions);
-      })
-      .catch(error => {
-        console.error('Erro ao carregar opções:', error);
-        callback([]);
-      });
-  };
-
-  const handleDocumentSelect = (selectedOption: any) => {
-    if (selectedOption) {
-      const selectedDocument = selectedOption.value;
-      setSelectedDocument(selectedDocument);
-      setSelectedData((prevData: any) => ({ ...prevData, documentData: selectedDocument }));
-
-      axios.get<Item[]>(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocument.documento}&item=${selectedDocument.item}`)
-        .then(response => {
-          const items = response.data.map(item => ({
-            ...item,
-            quantidadeEnviada: 0
-          }));
-
-          const fetchDrawingPaths = items.map(item =>
-            axios.get(`http://192.168.1.104:8089/api/v1/desenhos-produto/${item.codigoProduto}/caminho-desenho`)
-              .then(response => {
-                console.log(`Resposta completa da API para o produto ${item.codigoProduto}:`, response.data);
-                const caminhoDesenho = response.data.caminhoDesenho;
-                console.log(`Desenho carregado para o produto ${item.codigoProduto}:`, caminhoDesenho);
-                const newItem = { ...item, caminhoDesenho: caminhoDesenho };
-                return newItem;
-              })
-              .catch(error => {
-                console.error(`Erro ao carregar caminho do desenho para o produto ${item.codigoProduto}:`, error);
-                const newItem = { ...item, caminhoDesenho: '' };
-                return newItem;
-              })
-          );
-
-          Promise.all(fetchDrawingPaths)
-            .then(itemsWithDrawingPaths => {
-              const filteredItems = itemsWithDrawingPaths.filter(item => {
-                if (session?.user?.role === "Exp") {
-                  return item.local === "E";
-                } else if (session?.user?.role === "Amp") {
-                  return item.local === "A";
-                }
-                return false;
-              });
-              setShipmentItems(filteredItems);
-              setShipmentData(filteredItems);
-              setSelectedData((prevData: any) => ({ ...prevData, shipmentData: filteredItems }));
-            });
-        })
-        .catch(error => {
-          console.error('Erro ao carregar itens de embarque:', error);
-          setErrorMessages(prev => ({ ...prev, shipmentItems: 'Erro ao carregar itens de embarque' }));
-        });
-    }
-  };
-
-
   const downloadDrawing = async (codigoProduto: string, event: React.MouseEvent<HTMLTableCellElement, MouseEvent>) => {
     if (!codigoProduto) return;
   
@@ -229,7 +78,6 @@ export default function Settings() {
     }
   };
   
-
   const validateQuantities = () => {
     for (const item of shipmentData) {
       if (item.quantidadeEnviada === 0 || item.quantidadeEnviada === null) {
@@ -245,28 +93,40 @@ export default function Settings() {
     return true;
   };
 
+  const handleSave = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    event.preventDefault();
+  
+    if (selectedDocument && savedDocuments.has(selectedDocument.documento)) {
+      toast({
+        title: "Erro",
+        description: "Este documento já foi salvo.",
+        duration: 3000,
+        variant: "destructive",
+      });
+      return;
+    }
+  
+    if (validateQuantities()) {
+      const dataToSave = { documentData, shipmentData };
+      saveData(dataToSave);
+      setSavedDocuments(prev => new Set(prev).add(selectedDocument.documento));
+      const { documento, item, produto } = documentData;
+      toast({
+        title: "Dados enviados para Expedição",
+        description: `Documento: ${documento}, Item: ${item}, Produto: ${produto?.codigo} - ${produto?.descricao}`,
+        duration: 3000,
+      });
+    }
+  };
+  
+
   return (
     <div className="relative hidden flex-col items-start w-full md:flex">
       <form className="grid w-full items-start gap-6">
         <fieldset className="grid gap-6 rounded-lg border p-2">
           <legend className="-ml-1 px-1 text-sm font-medium">Ordens de produção</legend>
           <div className="grid gap-3">
-            <AsyncSelect
-              cacheOptions
-              loadOptions={loadOptions}
-              defaultOptions
-              placeholder="Selecione o documento"
-              value={selectedDocument ? { 
-                label: `OF:${selectedDocument.documento} - Cliente: ${selectedDocument.pessoa.descricao}`, 
-                value: selectedDocument
-              } : null}
-              onChange={handleDocumentSelect}
-              formatGroupLabel={(data) => (
-                <div className="text-gray-700 text-base font">
-                  <strong>{data.label}</strong>
-                </div>
-              )}
-            />
+            <DocumentSelect />
           </div>
         </fieldset>
         <fieldset className="grid gap-6 rounded-lg border p-2">
@@ -368,24 +228,11 @@ export default function Settings() {
                   size="sm"
                   variant="default"
                   className="gap-1 w-32"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    if (validateQuantities()) {
-                      const dataToSave = { documentData, shipmentData };
-                      saveData(dataToSave);
-                      const { documento, item, produto } = documentData;
-                      const savedProducts = shipmentData.map((product: { descricaoProduto: any; }) => product.descricaoProduto).join(', ');
-                      toast({
-                        title: "Dados enviados para Expedição",
-                        description: `Documento: ${documento}, Item: ${item}, Produto: ${produto?.codigo} - ${produto?.descricao}`,
-                        duration: 3000,
-                      });
-                    }
-                  }}
+                  onClick={handleSave}
                 >
-                <FileText className="h-4 w-4" />
-                Salvar
-              </Button>
+                  <FileText className="h-4 w-4" />
+                  Salvar
+                </Button>
               </CardFooter>
             </Card>
           </div>
