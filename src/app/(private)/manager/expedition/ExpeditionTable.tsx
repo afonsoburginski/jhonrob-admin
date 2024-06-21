@@ -18,6 +18,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
 
 interface ExpeditionTableProps {
   currentPage: number;
@@ -60,7 +65,24 @@ export function ExpeditionTable({ currentPage, itemsPerPage }: ExpeditionTablePr
         {currentItems && currentItems.map((data: ExpeditionData, index: number) => (
           data.documentData && data.documentData.produto && (
             <TableRow key={index}>
-              <TableCell className="text-xs py-0 border-x" style={{ width: '8%' }}>{data.documentData.documento}</TableCell>
+              <TableCell className="text-xs py-0 border-x" style={{ width: '8%' }}>
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <div>
+                      <p className="text-sm">{data.documentData.documento}</p>
+                    </div>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-80">
+                    <div className="flex flex-col space-y-2">
+                      <h4 className="text-sm font-semibold">Details</h4>
+                      <p className="text-sm">Documento: {data.documentData.documento}</p>
+                      <p className="text-sm">Item: {data.documentData.item}</p>
+                      <p className="text-sm">Código do Produto: {data.documentData.produto.codigo}</p>
+                      <p className="text-sm">Descrição do Produto: {data.documentData.produto.descricao}</p>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+              </TableCell>
               <TableCell className="text-xs py-0 border-r" style={{ width: '5%' }}>{data.documentData.item}</TableCell>
               <TableCell className="text-xs py-0 border-r" style={{ width: '8%' }}>{data.documentData.produto.codigo}</TableCell>
               <TableCell className="text-xs py-0 border-r" style={{ width: '64%' }}>{data.documentData.produto.descricao}</TableCell>

@@ -81,8 +81,8 @@ export default function Expedition() {
                     <CardDescription>
                       Lista de itens enviados para expedição
                     </CardDescription>
-                    <Button size="default" variant="outline" className="h-6">
-                      Gerar
+                    <Button size="default" variant="default" className="h-10">
+                      Gerar Expedição
                     </Button>
                   </div>
                 </CardHeader>

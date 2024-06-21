@@ -18,7 +18,7 @@ export default function DocumentSelect() {
   const [savedDocuments, setSavedDocuments] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    axios.get<DocumentData[]>('http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=100')
+    axios.get<DocumentData[]>(`${process.env.NEXT_PUBLIC_API_URL}/ordens-de-producao/ofs?page=0&size=100`)
       .then(response => {
         setDocuments(response.data);
       })
@@ -34,7 +34,7 @@ export default function DocumentSelect() {
       return;
     }
 
-    const apiUrl = `http://192.168.1.104:8089/api/v1/ordens-de-producao/ofs?page=0&size=100000`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/ordens-de-producao/ofs?page=0&size=100000`;
 
     axios.get(apiUrl)
       .then(response => {
@@ -85,7 +85,7 @@ export default function DocumentSelect() {
       setSelectedDocument(selectedDocument);
       setSelectedData((prevData: any) => ({ ...prevData, documentData: selectedDocument }));
 
-      axios.get<Item[]>(`http://192.168.1.104:8089/api/v1/itens-de-embarque?empresa=1&documento=${selectedDocument.documento}&item=${selectedDocument.item}`)
+      axios.get<Item[]>(`${process.env.NEXT_PUBLIC_API_URL}/itens-de-embarque?empresa=1&documento=${selectedDocument.documento}&item=${selectedDocument.item}`)
         .then(response => {
           const items = response.data.map(item => ({
             ...item,
@@ -93,7 +93,7 @@ export default function DocumentSelect() {
           }));
 
           const fetchDrawingPaths = items.map(item =>
-            axios.get(`http://192.168.1.104:8089/api/v1/desenhos-produto/${item.codigoProduto}/caminho-desenho`)
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/desenhos-produto/${item.codigoProduto}/caminho-desenho`)
               .then(response => {
                 const caminhoDesenho = response.data.caminhoDesenho;
                 const newItem = { ...item, caminhoDesenho: caminhoDesenho };
@@ -131,12 +131,12 @@ export default function DocumentSelect() {
   const customStyles = {
     menu: (provided: any) => ({
       ...provided,
-      maxHeight: '400px', // Altura máxima do menu
-      overflowY: 'auto', // Habilitar scroll
+      maxHeight: '400px',
+      overflowY: 'auto',
     }),
     menuList: (provided: any) => ({
       ...provided,
-      maxHeight: '400px', // Altura máxima da lista de opções
+      maxHeight: '400px',
     }),
   };
 
@@ -152,6 +152,15 @@ export default function DocumentSelect() {
         </div>
       )}
       styles={customStyles}
+          theme={(theme) => ({
+      ...theme,
+      borderRadius: 5,
+      colors: {
+        ...theme.colors,
+        primary25: 'lightgray',
+        primary: 'red',
+      },
+    })}
     />
   );
 }

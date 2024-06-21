@@ -227,7 +227,7 @@ export default function Settings() {
                 <Button
                   size="sm"
                   variant="default"
-                  className="gap-1 w-32"
+                  className="gap-1 w-56"
                   onClick={handleSave}
                 >
                   <FileText className="h-4 w-4" />
