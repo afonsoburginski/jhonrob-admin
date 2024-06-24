@@ -1,7 +1,6 @@
 // Page.tsx
 'use client'
 import React, { useState, useContext } from 'react';
-import AsyncSelect from 'react-select/async';
 import { ExpeditionTable } from './ExpeditionTable';
 import Settings from './settings';
 import Romaneio from './Romaneio';
@@ -10,7 +9,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/components/ui/tabs"
+} from "@/components/ui/tabs";
 import {
   Card,
   CardContent,
@@ -18,23 +17,26 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
-} from "@/components/ui/pagination"
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+} from "@/components/ui/pagination";
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExpeditionContext } from '@/context/ExpeditionProvider';
 import axios from 'axios';
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Expedition() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const itemsPerPage = 18;
   const { expeditionData } = useContext(ExpeditionContext);
   const totalItems = expeditionData.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const { toast } = useToast();
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -47,7 +49,53 @@ export default function Expedition() {
       setCurrentPage(currentPage + 1);
     }
   };
-  
+
+  const generateLogs = (data: any) => {
+    console.log('Data to be sent:', JSON.stringify(data, null, 2));
+  };
+
+  const handleSend = async () => {
+    setIsLoading(true); // Inicia o carregamento
+    const entradas = expeditionData.map((expedition: any) => {
+      const { documentData, shipmentData } = expedition;
+      return shipmentData.map((shipment: any) => ({
+        codigoProduto: shipment.codigoProduto,
+        documentoOp: parseInt(documentData.documento, 10),
+        itemOp: parseInt(documentData.item, 10),
+        empresaOp: parseInt(shipment.empresa, 10),
+        quantidade: shipment.quantidadeEnviada,
+      }));
+    }).flat();
+
+    const payload = { entradas };
+
+    try {
+      generateLogs(payload);
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/expedicao/entrada`, payload);
+      console.log('Response:', response.data);
+
+      entradas.forEach((item, index) => {
+        setTimeout(() => {
+          toast({
+            title: `Documento OP: ${item.documentoOp}`,
+            description: `Empresa OP: ${item.empresaOp}\nItem: ${item.itemOp} | Código: ${item.codigoProduto} | Quantidade: ${item.quantidade}`,
+          });
+        }, index * 500);
+      });
+    } catch (error) {
+      console.error('Error sending data:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao enviar os dados.",
+        variant: "destructive",
+      });
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, entradas.length * 500);
+    }
+  };
+
   return (
     <div className="flex h-full w-full flex-col bg-muted/40">
       <div className="flex flex-col sm:gap-4 sm:pt-4 ">
@@ -71,7 +119,7 @@ export default function Expedition() {
                   <Settings />
                 </CardContent>
               </Card>
-                <Romaneio/>
+              <Romaneio />
             </TabsContent>
             <TabsContent value="expedition">
               <Card x-chunk="dashboard-06-chunk-1">
@@ -81,8 +129,21 @@ export default function Expedition() {
                     <CardDescription>
                       Lista de itens enviados para expedição
                     </CardDescription>
-                    <Button size="default" variant="default" className="h-10">
-                      Gerar Expedição
+                    <Button
+                      size="default"
+                      variant="default"
+                      className="h-10"
+                      onClick={handleSend}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Enviando...
+                        </>
+                      ) : (
+                        "ENVIAR"
+                      )}
                     </Button>
                   </div>
                 </CardHeader>
@@ -116,5 +177,5 @@ export default function Expedition() {
         </main>
       </div>
     </div>
-  )
+  );
 }

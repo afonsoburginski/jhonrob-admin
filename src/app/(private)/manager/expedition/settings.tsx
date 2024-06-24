@@ -78,21 +78,6 @@ export default function Settings() {
     }
   };
   
-  const validateQuantities = () => {
-    for (const item of shipmentData) {
-      if (item.quantidadeEnviada === 0 || item.quantidadeEnviada === null) {
-        toast({
-          title: "Erro",
-          description: "Todos os campos de quantidade devem ser preenchidos e não podem ser zero.",
-          duration: 3000,
-          variant: "destructive",
-        });
-        return false;
-      }
-    }
-    return true;
-  };
-
   const handleSave = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
   
@@ -103,22 +88,23 @@ export default function Settings() {
         duration: 3000,
         variant: "destructive",
       });
+      console.log(`Tentativa de salvar documento duplicado: ${selectedDocument.documento}`);
       return;
     }
   
-    if (validateQuantities()) {
-      const dataToSave = { documentData, shipmentData };
-      saveData(dataToSave);
-      setSavedDocuments(prev => new Set(prev).add(selectedDocument.documento));
-      const { documento, item, produto } = documentData;
-      toast({
-        title: "Dados enviados para Expedição",
-        description: `Documento: ${documento}, Item: ${item}, Produto: ${produto?.codigo} - ${produto?.descricao}`,
-        duration: 3000,
-      });
-    }
+    const filteredShipmentData = shipmentData.filter(item => item.quantidadeEnviada > 0);
+    const dataToSave = { documentData, shipmentData: filteredShipmentData };
+    console.log('Dados a serem salvos:', dataToSave);
+    saveData(dataToSave);
+    setSavedDocuments(prev => new Set(prev).add(selectedDocument.documento));
+    const { documento, item, produto } = documentData;
+    toast({
+      title: "Dados enviados para Expedição",
+      description: `Documento: ${documento}, Item: ${item}, Produto: ${produto?.codigo} - ${produto?.descricao}`,
+      duration: 3000,
+    });
+    console.log(`Documento salvo com sucesso: ${documento}, Item: ${item}, Produto: ${produto?.codigo} - ${produto?.descricao}`);
   };
-  
 
   return (
     <div className="relative hidden flex-col items-start w-full md:flex">
@@ -149,7 +135,7 @@ export default function Settings() {
                 </div>
               </CardHeader>
               <CardContent className="overflow-auto max-h-[47vh] min-h-[47vh]">
-                <Table className="w-full">
+              <Table className="w-full">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="text-xs h-6">Código</TableHead>
@@ -213,7 +199,7 @@ export default function Settings() {
                                     }));
                                   }}
                                 />
-                                {errorMessages[item.codigoProduto] && <span className="text-red-500">{errorMessages[item.codigoProduto]}</span>}
+                                {errorMessages[item.codigoProduto] && <span className="text-xs text-red-500">{errorMessages[item.codigoProduto]}</span>}
                               </TableCell>
                             </TableRow>
                           ))}

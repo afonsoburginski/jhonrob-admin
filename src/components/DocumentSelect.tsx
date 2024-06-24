@@ -34,7 +34,7 @@ export default function DocumentSelect() {
       return;
     }
 
-    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/ordens-de-producao/ofs?page=0&size=100000`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/ordens-de-producao/ofs?page=0&size=100000000`;
 
     axios.get(apiUrl)
       .then(response => {
