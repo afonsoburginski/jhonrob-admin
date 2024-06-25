@@ -109,9 +109,9 @@ export default function DocumentSelect() {
           Promise.all(fetchDrawingPaths)
             .then(itemsWithDrawingPaths => {
               const filteredItems = itemsWithDrawingPaths.filter(item => {
-                if (session?.user?.role === "Exp") {
+                if (session?.user?.role === "E") {
                   return item.local === "E";
-                } else if (session?.user?.role === "Amp") {
+                } else if (session?.user?.role === "A") {
                   return item.local === "A";
                 }
                 return false;

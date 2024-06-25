@@ -31,7 +31,7 @@ export default async function middleware(req: NextRequest) {
       return NextResponse.next();
     }
 
-    if ((session.role === "Exp" || session.role === "Amp") && path !== "/manager/expedition") {
+    if ((session.role === "E" || session.role === "A") && path !== "/manager/expedition") {
       return NextResponse.redirect(new URL("/manager/expedition", req.url));
     }
   }

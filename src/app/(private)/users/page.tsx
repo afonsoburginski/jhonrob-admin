@@ -1,3 +1,4 @@
+// page.tsx
 'use client'
 import * as React from "react"
 import { useState, useEffect } from "react"
@@ -7,14 +8,14 @@ import {
   File,
 } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
+  CardFooter,
 } from "@/components/ui/card"
 import {
   DropdownMenu,
@@ -38,6 +39,8 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import UserStatisticsCard from "@/components/UserStatisticsCard"
+import { Progress } from "@/components/ui/progress"
 
 interface Usuario {
   codigo: string
@@ -45,6 +48,12 @@ interface Usuario {
   login: string
   senha: string
   role: string
+}
+
+const ROLES = {
+  A: "Almoxarifado",
+  E: "Expedição",
+  ADM: "Administrador"
 }
 
 export default function Users() {
@@ -65,21 +74,32 @@ export default function Users() {
     setEditRole({ ...editRole, [codigo]: role })
   }
 
-  const handleSaveRole = (codigo: string) => {
-    const usuario = usuarios.find(u => u.codigo === codigo)
-    if (usuario) {
-      axios.patch(`http://192.168.1.104:8089/api/v1/usuarios/${codigo}`, {
-        ...usuario,
-        role: editRole[codigo]
-      })
-      .then(response => {
-        // Atualiza a lista de usuários após a edição
-        setUsuarios(usuarios.map(u => u.codigo === codigo ? { ...u, role: editRole[codigo] } : u))
+  const handleSaveRoles = () => {
+    const updates = Object.keys(editRole).map(codigo => {
+      const usuario = usuarios.find(u => u.codigo === codigo)
+      if (usuario) {
+        return axios.patch(`http://192.168.1.104:8089/api/v1/usuarios/${codigo}`, {
+          ...usuario,
+          role: editRole[codigo]
+        })
+      }
+      return null
+    })
+
+    Promise.all(updates)
+      .then(responses => {
+        setUsuarios(usuarios.map(u => ({
+          ...u,
+          role: editRole[u.codigo] || u.role
+        })))
       })
       .catch(error => {
-        console.error("Erro ao atualizar usuário:", error)
+        console.error("Erro ao atualizar usuários:", error)
       })
-    }
+  }
+
+  const countRoles = (role: string) => {
+    return usuarios.filter(usuario => usuario.role === role).length
   }
 
   return (
@@ -133,7 +153,7 @@ export default function Users() {
                       Lista de usuários registrados.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="max-h-[500px] overflow-y-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -142,7 +162,6 @@ export default function Users() {
                           <TableHead>Login</TableHead>
                           <TableHead>Senha</TableHead>
                           <TableHead>Role</TableHead>
-                          <TableHead>Ações</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -153,29 +172,38 @@ export default function Users() {
                             <TableCell>{usuario.login}</TableCell>
                             <TableCell>{usuario.senha}</TableCell>
                             <TableCell>
-                              <input
-                                type="text"
+                              <select
                                 value={editRole[usuario.codigo] || usuario.role}
                                 onChange={(e) => handleRoleChange(usuario.codigo, e.target.value)}
                                 className="border p-1 rounded"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                size="sm"
-                                onClick={() => handleSaveRole(usuario.codigo)}
                               >
-                                Salvar
-                              </Button>
+                                {Object.entries(ROLES).map(([value, label]) => (
+                                  <option key={value} value={value}>{label}</option>
+                                ))}
+                              </select>
                             </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
                   </CardContent>
+                  <CardFooter>
+                    <Button
+                      size="sm"
+                      onClick={handleSaveRoles}
+                    >
+                      Salvar
+                    </Button>
+                  </CardFooter>
                 </Card>
               </TabsContent>
             </Tabs>
+          </div>
+          <div className="lg:col-span-1">
+            <UserStatisticsCard 
+              countRoles={countRoles} 
+              totalUsers={usuarios.length} 
+            />
           </div>
         </main>
       </div>
