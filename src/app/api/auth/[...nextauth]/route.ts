@@ -1,5 +1,4 @@
-// src/app/api/auth/[...nextauth]/route.ts
-import NextAuth, { type NextAuthOptions, User, Session } from "next-auth";
+import NextAuth, { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from 'axios';
 
@@ -8,27 +7,22 @@ type CustomUser = {
   name: string;
   email: string;
   image: string | null;
-  role: string; // Assuming role is always present
+  role: string;
+  empresa: string;
 };
-
-// Extend the existing User type with an optional role property
-declare module "next-auth" {
-  interface User {
-    role?: string;
-  }
-}
 
 const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       credentials: {
         login: { label: "Login", type: "text" },
-        senha: { label: "Senha", type: "password" }
+        senha: { label: "Senha", type: "password" },
+        empresa: { label: "Empresa", type: "text" }
       },
       async authorize(credentials) {
-        const { login, senha } = credentials ?? {};
-        if (!login || !senha) {
-          throw new Error("Missing login or senha");
+        const { login, senha, empresa } = credentials ?? {};
+        if (!login || !senha || !empresa) {
+          throw new Error("Missing login, senha, or empresa");
         }
         const response = await axios.post<{ token: string }>(`${process.env.NEXT_PUBLIC_API_URL}/usuarios/login`, {
           login,
@@ -49,7 +43,7 @@ const authOptions: NextAuthOptions = {
         if (!user) {
           throw new Error("Failed to fetch user");
         }
-        return { id: user.login, name: user.nome, email: user.login, role: user.role, image: null } as CustomUser;
+        return { id: user.login, name: user.nome, email: user.login, role: user.role, image: null, empresa } as CustomUser; // Include empresa in the returned user
       },
     }),
   ],
@@ -57,12 +51,14 @@ const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.role = (user as CustomUser).role;
+        token.empresa = (user as CustomUser).empresa; // Include empresa in the token
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
         session.user.role = (token as { role: string }).role;
+        session.user.empresa = (token as { empresa: string }).empresa; // Include empresa in the session
       }
       return session;
     },

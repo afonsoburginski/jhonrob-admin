@@ -1,16 +1,16 @@
-// exeditionTable.tsx
+// src/app/(private)/manager/expedition/ExpeditionTable.tsx
 'use client'
 import React, { useContext, useState } from 'react';
 import { ExpeditionContext } from '@/context/ExpeditionProvider';
 import { Eye, MoreHorizontal } from 'lucide-react';
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -18,7 +18,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   Dialog,
@@ -43,41 +43,6 @@ import RomaneioDetalhes from './RomaneioDetalhes';
 interface ExpeditionTableProps {
   currentPage: number;
   itemsPerPage: number;
-}
-
-interface DocumentData {
-  documento: string;
-  item: string;
-  produto: {
-    codigo: string;
-    descricao: string;
-  };
-}
-
-interface ShipmentData {
-  caminhoDesenho?: string;
-  codigoComponente?: string;
-  codigoProduto: string;
-  codigoProdutoPrimeiroNivel: string;
-  descricaoComponente?: string;
-  descricaoProduto: string;
-  descricaoProdutoPrimeiroNivel: string;
-  documento: string;
-  empresa: number;
-  item: string;
-  local: string;
-  material?: string;
-  medidas?: string;
-  peso: number;
-  quantidade: number;
-  quantidadeEnviada: number;
-  revisaoDesenho: number;
-  unidade: string;
-}
-
-interface ExpeditionData {
-  documentData: DocumentData;
-  shipmentData: ShipmentData[];
 }
 
 export function ExpeditionTable({ currentPage, itemsPerPage }: ExpeditionTableProps) {
@@ -141,7 +106,9 @@ export function ExpeditionTable({ currentPage, itemsPerPage }: ExpeditionTablePr
                             Informações detalhadas dos itens do embarque.
                           </DialogDescription>
                         </DialogHeader>
-                        <RomaneioDetalhes documentData={selectedDocumentData} shipmentData={selectedShipmentData} />
+                        {selectedDocumentData && (
+                          <RomaneioDetalhes documentData={selectedDocumentData} shipmentData={selectedShipmentData} />
+                        )}
                       </DialogContent>
                     </Dialog>
                   ) : (
@@ -159,7 +126,9 @@ export function ExpeditionTable({ currentPage, itemsPerPage }: ExpeditionTablePr
                             Informações detalhadas dos itens do embarque.
                           </DrawerDescription>
                         </DrawerHeader>
-                        <RomaneioDetalhes documentData={selectedDocumentData} shipmentData={selectedShipmentData} className="px-4" />
+                        {selectedDocumentData && (
+                          <RomaneioDetalhes documentData={selectedDocumentData} shipmentData={selectedShipmentData} />
+                        )}
                         <DrawerFooter className="pt-2">
                           <DrawerClose asChild>
                             <Button variant="outline">Fechar</Button>

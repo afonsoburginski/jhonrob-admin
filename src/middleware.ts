@@ -27,7 +27,6 @@ export default async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/", req.url));
     }
 
-    // Allow users with role "Adm" to access all routes
     if (session.role === "Adm") {
       return NextResponse.next();
     }

@@ -42,6 +42,8 @@ import { Input } from "@/components/ui/input"
 import { signOut, getSession } from 'next-auth/react';
 import { Session } from 'next-auth';
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
 export default function Header() {
   const pathname = usePathname();
   const pathnames = pathname.split('/').filter(x => x);
@@ -50,6 +52,7 @@ export default function Header() {
   useEffect(() => {
     const fetchSession = async () => {
       const session = await getSession();
+      console.log("Dados do usuário logado:", session?.user); // Log dos dados do usuário
       setSession(session);
     };
 
@@ -106,7 +109,7 @@ export default function Header() {
           <DropdownMenuItem><Link href="/settings">Configurações</Link></DropdownMenuItem>
           <DropdownMenuItem>Suporte</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/login' })}>Sair</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => signOut({ callbackUrl: `${BASE_URL}/login` })}>Sair</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>

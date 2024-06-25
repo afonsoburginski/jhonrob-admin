@@ -92,7 +92,7 @@ export default function Settings() {
       return;
     }
   
-    const filteredShipmentData = shipmentData.filter(item => item.quantidadeEnviada > 0);
+    const filteredShipmentData = shipmentData.filter((item: { quantidadeEnviada: number; }) => item.quantidadeEnviada > 0);
     const dataToSave = { documentData, shipmentData: filteredShipmentData };
     console.log('Dados a serem salvos:', dataToSave);
     saveData(dataToSave);
@@ -166,14 +166,35 @@ export default function Settings() {
                                   className="h-5 text-xs"
                                   id={`quantity-${item.codigoProduto}`}
                                   type="number"
-                                  value={item.quantidadeEnviada !== null ? item.quantidadeEnviada : 0}
+                                  value={item.quantidadeEnviada !== null ? item.quantidadeEnviada : ''}
                                   max={item.quantidade}
                                   step="1"
+                                  placeholder="0"
                                   onKeyPress={(e) => {
                                     if (e.key === 'Enter') e.preventDefault();
                                   }}
+                                  onFocus={(e) => {
+                                    if (e.target.value === '0') {
+                                      e.target.value = '';
+                                    }
+                                  }}
+                                  onBlur={(e) => {
+                                    if (e.target.value === '') {
+                                      e.target.value = '0';
+                                    }
+                                  }}
                                   onChange={(e) => {
-                                    let newQuantity = parseInt(e.target.value);
+                                    let newValue = e.target.value;
+
+                                    // Remove leading zeros
+                                    newValue = newValue.replace(/^0+(?=\d)/, '');
+
+                                    let newQuantity = parseInt(newValue, 10);
+
+                                    if (isNaN(newQuantity)) {
+                                      newQuantity = 0;
+                                    }
+
                                     if (newQuantity > item.quantidade) {
                                       setErrorMessages(prev => ({ ...prev, [item.codigoProduto]: 'Valor excedido' }));
                                       newQuantity = item.quantidade;
@@ -183,15 +204,18 @@ export default function Settings() {
                                         return rest;
                                       });
                                     }
+
                                     if (newQuantity < 0) {
                                       newQuantity = 0;
                                     }
+
                                     const updatedShipmentData = shipmentData.map((shipmentItem: { codigoProduto: string; }) => {
                                       if (shipmentItem.codigoProduto === item.codigoProduto) {
                                         return { ...shipmentItem, quantidadeEnviada: newQuantity };
                                       }
                                       return shipmentItem;
                                     });
+
                                     setShipmentData(updatedShipmentData);
                                     setSelectedData((prevData: any) => ({
                                       ...prevData,

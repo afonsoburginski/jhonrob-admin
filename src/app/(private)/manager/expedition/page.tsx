@@ -1,4 +1,3 @@
-// Page.tsx
 'use client'
 import React, { useState, useContext } from 'react';
 import { ExpeditionTable } from './ExpeditionTable';
@@ -29,6 +28,14 @@ import { ExpeditionContext } from '@/context/ExpeditionProvider';
 import axios from 'axios';
 import { useToast } from "@/components/ui/use-toast";
 
+type Entrada = {
+  codigoProduto: string;
+  documentoOp: number;
+  itemOp: number;
+  empresaOp: number;
+  quantidade: number;
+};
+
 export default function Expedition() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,7 +63,7 @@ export default function Expedition() {
 
   const handleSend = async () => {
     setIsLoading(true); // Inicia o carregamento
-    const entradas = expeditionData.map((expedition: any) => {
+    const entradas: Entrada[] = expeditionData.map((expedition: any) => {
       const { documentData, shipmentData } = expedition;
       return shipmentData.map((shipment: any) => ({
         codigoProduto: shipment.codigoProduto,
@@ -74,7 +81,7 @@ export default function Expedition() {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/expedicao/entrada`, payload);
       console.log('Response:', response.data);
 
-      entradas.forEach((item, index) => {
+      entradas.forEach((item: Entrada, index: number) => {
         setTimeout(() => {
           toast({
             title: `Documento OP: ${item.documentoOp}`,

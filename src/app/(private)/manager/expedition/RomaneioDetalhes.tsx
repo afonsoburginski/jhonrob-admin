@@ -34,18 +34,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-interface ShipmentData {
-  peso?: string;
-  quantidade?: string;
-  quantidadeEnviada?: string;
-  codigoProdutoPrimeiroNivel?: string;
-  descricaoProdutoPrimeiroNivel?: string;
-  local?: string;
-  [key: string]: any;
-}
-
 interface RomaneioDetalhesProps {
-  documentData: any;
+  documentData: DocumentData;
   shipmentData: ShipmentData[];
 }
 
@@ -56,9 +46,9 @@ export default function Romaneio({ documentData, shipmentData }: RomaneioDetalhe
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
   const totalItems = shipmentData.length;
 
-  const totalWeight = shipmentData?.reduce((total: number, item: ShipmentData) => total + (item?.peso ? parseFloat(item.peso) : 0), 0);
-  const totalQuantity = shipmentData?.reduce((total: number, item: ShipmentData) => total + (item?.quantidade ? parseFloat(item.quantidade) : 0), 0);
-  const totalBalance = shipmentData?.reduce((total: number, item: ShipmentData) => total + (item?.quantidadeEnviada ? parseFloat(item.quantidadeEnviada) : 0), 0);
+  const totalWeight = shipmentData?.reduce((total: number, item: ShipmentData) => total + (item?.peso ?? 0), 0);
+  const totalQuantity = shipmentData?.reduce((total: number, item: ShipmentData) => total + (item?.quantidade ?? 0), 0);
+  const totalBalance = shipmentData?.reduce((total: number, item: ShipmentData) => total + (item?.quantidadeEnviada ?? 0), 0);
 
   const groupedShipmentData = groupBy(shipmentData, 'codigoProdutoPrimeiroNivel');
 
@@ -199,7 +189,7 @@ export default function Romaneio({ documentData, shipmentData }: RomaneioDetalhe
                 </TableHeader>
                 <TableBody>
                   <TableRow className="bg-gray-200">
-                    <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-6">Local: {getLocalLabel(shipmentData[0]?.local)}</TableHead>
+                    <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-6">Local: {getLocalLabel(shipmentData[0]?.local ?? '')}</TableHead>
                   </TableRow>
                   <TableRow>
                     <TableHead colSpan={10} className="w-full text-center text-xs font-bold h-1.5" />
@@ -214,8 +204,10 @@ export default function Romaneio({ documentData, shipmentData }: RomaneioDetalhe
                         {group.map((item, index) => (
                           <TableRow key={index}>
                             <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.quantidade ?? '-'}</TableCell>
-                            <TableCell className={`text-xs text-right py-1 px-1 border-r ${item?.quantidadeEnviada ? 'bg-red-500' : ''}`}>
-                              {item?.quantidade ? parseFloat(item.quantidade) - parseFloat(item.quantidadeEnviada ?? '0') : '-'}
+                            <TableCell className="text-xs text-right py-1 px-1 border-r">
+                              {item?.quantidade !== undefined && item?.quantidadeEnviada !== undefined 
+                                ? item.quantidade - item.quantidadeEnviada 
+                                : '-'}
                             </TableCell>
                             <TableCell className="text-xs text-right py-1 px-1 border-r">{item?.codigoProduto ?? '-'}</TableCell>
                             <TableCell className="text-xs text-center py-1 px-1 border-r">{item?.revisaoDesenho ?? '-'}</TableCell>
@@ -228,7 +220,9 @@ export default function Romaneio({ documentData, shipmentData }: RomaneioDetalhe
                                 ? item.medidas.split('x').map((num: string) => parseFloat(num).toFixed(2)).join('x')
                                 : '-'}
                             </TableCell>
-                            <TableCell className="text-xs text-right py-1 px-1">{item?.peso ? parseFloat(item.peso).toFixed(2) : '-'}</TableCell>
+                            <TableCell className="text-xs text-right py-1 px-1">
+                              {item?.peso !== undefined ? item.peso.toFixed(2) : '-'}
+                            </TableCell>
                           </TableRow>
                         ))}
                       </React.Fragment>

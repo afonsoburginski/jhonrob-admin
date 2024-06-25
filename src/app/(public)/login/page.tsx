@@ -1,4 +1,3 @@
-// src/app/(public)/login/page.tsx
 'use client'
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
@@ -16,10 +15,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { signIn } from 'next-auth/react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function LoginForm() {
   const [login, setLogin] = useState("");
   const [senha, setSenha] = useState("");
+  const [empresa, setEmpresa] = useState("Jhonrob Matriz 1");
   const router = useRouter();
   const { toast } = useToast();
 
@@ -28,12 +35,13 @@ export default function LoginForm() {
     event.preventDefault();
   
     try {
-      console.log(`Fazendo login com usuário: ${login} e senha: ${senha}`);
+      console.log(`Fazendo login com usuário: ${login}, senha: ${senha}, empresa: ${empresa}`);
   
       const response = await signIn('credentials', {
         redirect: false,
         login,
-        senha
+        senha,
+        empresa
       });
   
       if (response && response.error) {
@@ -95,6 +103,18 @@ export default function LoginForm() {
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
                   />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="empresa">Empresa</Label>
+                  <Select onValueChange={(value) => setEmpresa(value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecione a empresa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Jhonrob Matriz 1</SelectItem>
+                      <SelectItem value="2">Jhonrob Filial 2</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardContent>
               <CardFooter>
