@@ -3,7 +3,6 @@ import axios from 'axios';
 import React, { useContext, useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
 import { DataContext } from '@/context/DataProvider';
-import { ExpeditionContext } from '@/context/ExpeditionProvider';
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from "next-auth/react";
 import debounce from 'lodash.debounce';
@@ -18,7 +17,10 @@ export default function DocumentSelect() {
   const [savedDocuments, setSavedDocuments] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    axios.get<DocumentData[]>(`${process.env.NEXT_PUBLIC_API_URL}/ordens-de-producao/ofs?page=0&size=100`)
+    const empresa = session?.user?.empresa || '0';
+    const status = '1';
+
+    axios.get<DocumentData[]>(`${process.env.NEXT_PUBLIC_API_URL}/ordens-de-producao/ofs?page=0&size=100&empresa=${empresa}&status=${status}`)
       .then(response => {
         setDocuments(response.data);
       })
@@ -26,7 +28,7 @@ export default function DocumentSelect() {
         console.error('Erro ao carregar documentos:', error);
         setErrorMessages(prev => ({ ...prev, documents: 'Erro ao carregar documentos' }));
       });
-  }, []);
+  }, [session]);
 
   const loadOptions = debounce((inputValue: string, callback: (options: any[]) => void) => {
     if (inputValue.trim() === "") {
@@ -34,7 +36,9 @@ export default function DocumentSelect() {
       return;
     }
 
-    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/ordens-de-producao/ofs?page=0&size=100000000`;
+    const empresa = session?.user?.empresa || '0';
+    const status = '1';
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/ordens-de-producao/ofs?page=0&size=100000000&empresa=${empresa}&status=${status}`;
 
     axios.get(apiUrl)
       .then(response => {
@@ -85,7 +89,7 @@ export default function DocumentSelect() {
       setSelectedDocument(selectedDocument);
       setSelectedData((prevData: any) => ({ ...prevData, documentData: selectedDocument }));
 
-      axios.get<Item[]>(`${process.env.NEXT_PUBLIC_API_URL}/itens-de-embarque?empresa=1&documento=${selectedDocument.documento}&item=${selectedDocument.item}`)
+      axios.get<Item[]>(`${process.env.NEXT_PUBLIC_API_URL}/itens-de-embarque?empresa=${session?.user?.empresa}&documento=${selectedDocument.documento}&item=${selectedDocument.item}`)
         .then(response => {
           const items = response.data.map(item => ({
             ...item,
@@ -152,15 +156,15 @@ export default function DocumentSelect() {
         </div>
       )}
       styles={customStyles}
-          theme={(theme) => ({
-      ...theme,
-      borderRadius: 5,
-      colors: {
-        ...theme.colors,
-        primary25: 'lightgray',
-        primary: 'red',
-      },
-    })}
+      theme={(theme) => ({
+        ...theme,
+        borderRadius: 5,
+        colors: {
+          ...theme.colors,
+          primary25: 'lightgray',
+          primary: 'red',
+        },
+      })}
     />
   );
 }
