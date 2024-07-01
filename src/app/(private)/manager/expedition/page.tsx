@@ -1,3 +1,4 @@
+// src/app/(private)/manager/expedition/Expedition.tsx
 'use client'
 import React, { useState, useContext } from 'react';
 import { ExpeditionTable } from './ExpeditionTable';
@@ -39,8 +40,11 @@ type Entrada = {
 export default function Expedition() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [gerarRomaneio, setGerarRomaneio] = useState(true);
+  const [placa, setPlaca] = useState('0');
+  const [mercado, setMercado] = useState('i');
   const itemsPerPage = 18;
-  const { expeditionData } = useContext(ExpeditionContext);
+  const { expeditionData, removeMultipleData } = useContext(ExpeditionContext);
   const totalItems = expeditionData.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const { toast } = useToast();
@@ -74,13 +78,19 @@ export default function Expedition() {
       }));
     }).flat();
 
-    const payload = { entradas };
+    const payload = { 
+      entradas,
+      gerarRomaneio,
+      placa,
+      mercado
+    };
 
     try {
       generateLogs(payload);
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/expedicao/entrada`, payload);
       console.log('Response:', response.data);
 
+      // Exibir os toasts
       entradas.forEach((item: Entrada, index: number) => {
         setTimeout(() => {
           toast({
@@ -89,6 +99,11 @@ export default function Expedition() {
           });
         }, index * 500);
       });
+
+      // Remover os itens enviados do contexto
+      const sentIndices = expeditionData.map((_, index) => index);
+      removeMultipleData(sentIndices);
+
     } catch (error) {
       console.error('Error sending data:', error);
       toast({

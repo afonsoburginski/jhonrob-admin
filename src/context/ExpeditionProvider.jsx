@@ -15,7 +15,11 @@ export const ExpeditionProvider = ({ children }) => {
     setExpeditionData(prevData => prevData.filter((_, i) => i !== index));
   };
 
-  const value = useMemo(() => ({ expeditionData, saveData, removeData }), [expeditionData]);
+  const removeMultipleData = (indices) => {
+    setExpeditionData(prevData => prevData.filter((_, i) => !indices.includes(i)));
+  };
+
+  const value = useMemo(() => ({ expeditionData, saveData, removeData, removeMultipleData }), [expeditionData]);
 
   return (
     <ExpeditionContext.Provider value={value}>

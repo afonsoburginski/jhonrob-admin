@@ -71,10 +71,11 @@ export function ExpeditionTable({ currentPage, itemsPerPage }: ExpeditionTablePr
         <TableHeader>
           <TableRow>
             <TableHead className="text-xs font-bold h-6" style={{ width: '8%' }}>Documento</TableHead>
-            <TableHead className="text-xs font-bold h-6" style={{ width: '5%' }}>Item</TableHead>
+            <TableHead className="text-xs font-bold h-6" style={{ width: '2%' }}>Item</TableHead>
+            <TableHead className="text-xs font-bold h-6" style={{ width: '8%' }}>Cliente</TableHead>
             <TableHead className="text-xs font-bold h-6" style={{ width: '8%' }}>Código do Produto</TableHead>
-            <TableHead className="text-xs font-bold h-6" style={{ width: '70%' }}>Descrição do Produto</TableHead>
-            <TableHead className="text-xs font-bold h-6" style={{ width: '5%' }}>Detalhes</TableHead>
+            <TableHead className="text-xs font-bold h-6" style={{ width: '30%' }}>Descrição do Produto</TableHead>
+            <TableHead className="text-xs font-bold h-6" style={{ width: '2%' }}>Detalhes</TableHead>
             <TableHead style={{ width: '5%' }}>
               <span className="sr-only">Actions</span>
             </TableHead>
@@ -82,15 +83,16 @@ export function ExpeditionTable({ currentPage, itemsPerPage }: ExpeditionTablePr
         </TableHeader>
         <TableBody>
           {currentItems && currentItems.map((data: ExpeditionData, index: number) => (
-            data.documentData && data.documentData.produto && (
+            data.documentData && data.documentData.produto && data.documentData.pessoa && (
               <TableRow key={index}>
                 <TableCell className="text-xs py-0 border-x" style={{ width: '8%' }}>
                   <p className="text-sm">{data.documentData.documento}</p>
                 </TableCell>
-                <TableCell className="text-xs py-0 border-r" style={{ width: '5%' }}>{data.documentData.item}</TableCell>
+                <TableCell className="text-xs py-0 border-r" style={{ width: '2%' }}>{data.documentData.item}</TableCell>
+                <TableCell className="text-xs py-0 border-r" style={{ width: '8%' }}>{data.documentData.pessoa.descricao}</TableCell>
                 <TableCell className="text-xs py-0 border-r" style={{ width: '8%' }}>{data.documentData.produto.codigo}</TableCell>
-                <TableCell className="text-xs py-0 border-r" style={{ width: '70%' }}>{data.documentData.produto.descricao}</TableCell>
-                <TableCell className="text-xs py-0 border-r" style={{ width: '5%' }}>
+                <TableCell className="text-xs py-0 border-r" style={{ width: '30%' }}>{data.documentData.produto.descricao}</TableCell>
+                <TableCell className="text-xs py-0 border-r" style={{ width: '2%' }}>
                   {isDesktop ? (
                     <Dialog open={open} onOpenChange={setOpen}>
                       <DialogTrigger asChild>
